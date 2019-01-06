@@ -1,0 +1,10 @@
+[Unit]
+Description=Photo Gallery
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=/usr/bin/python /PATH/gallery.py -c /PATH/config.json
+
+[Install]
+WantedBy=multi-user.target

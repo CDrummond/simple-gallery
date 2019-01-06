@@ -1,0 +1,247 @@
+/*
+  Gallery WebApp
+  Copyright 2019 Craig Drummond <craig.p.drummond@gmail.com>
+  Licensed under the MIT license.
+*/
+
+:root {
+    --thumb-size: {{THUMB_SIZE}}px;
+}
+
+body {
+    background: #444;
+    color: #eee;
+    font-family: "sans serif";
+    /*font-size: 110%;*/
+}
+
+.bootbox {
+    color: #000;
+}
+
+.page {
+    clear:both;
+    margin:0px;
+}
+
+.title {
+    font-weight: 600;
+    margin-bottom: 16px;
+    width:100;
+    text-align:center;
+}
+
+.section {
+    padding-top:0px;
+    clear:both;
+}
+
+.video-container {
+    position: relative;
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 25% !important;
+    width: auto;
+    opacity: 0.75;
+}
+
+.folder-grid {
+    overflow-x: hidden !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--thumb-size) + 16px), 1fr));
+    grid-auto-rows: min-content;
+    grid-gap: 0px;
+    padding: 2px !important;
+    margin: 0px !important;
+    justify-items: center;
+}
+
+.folder-grid-few {
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--thumb-size) + 16px), calc(var(--thumb-size) + 24px))) !important;
+}
+
+.folder-grid div {
+    cursor: pointer;
+}
+
+.folder-grid img {
+    object-fit: cover;
+    object-position: 50% 15%;
+    display: block;
+    height: var(--thumb-size) !important;
+    width: var(--thumb-size) !important;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 4px;
+    border-radius: 8px;
+}
+
+.folder-grid-text {
+    padding-bottom: 16px;
+    text-align:center;
+}
+
+.header {
+    clear: both;
+    padding-left: 8px;
+    padding-top: 8px;
+}
+
+.grid {
+    clear: both;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.grid ul {
+    padding-left: 0;
+}
+
+.grid li {
+    display: inline-block;
+    list-style-type: none;
+    margin: 0;
+    padding: 2px;
+    cursor: pointer;
+}
+
+.grid li img {
+    height: calc(var(--thumb-size) - 30px);
+}
+
+.image-grid {
+    overflow-x: hidden !important;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--thumb-size) - 28px), 1fr));
+    grid-auto-rows: min-content;
+    grid-gap: 0px;
+    padding: 0px !important;
+    margin: 2px !important;
+}
+
+.image-grid-few {
+    grid-template-columns: repeat(auto-fit, minmax(calc(var(--thumb-size) - 28px), calc(var(--thumb-size) - 20px))) !important;
+}
+
+.image-grid div {
+    cursor: pointer;
+}
+
+.image-grid-thumb {
+    object-fit: cover;
+    object-position: 50% 15%;
+    display: block;
+    height: calc(var(--thumb-size) - 30px) !important;
+    width: calc(var(--thumb-size) - 30px) !important;
+    margin: 2px !important;
+    border-radius: 4px;
+}
+
+.image-grid-year {
+    display: block;
+    height: calc(var(--thumb-size) - 30px) !important;
+    width: calc(var(--thumb-size) - 30px) !important;
+    margin: 2px !important;
+    border-radius: 4px;
+    background-color: #333;
+    text-align: center;
+    vertical-align: middle;
+    line-height: calc(var(--thumb-size) - 30px); 
+}
+
+.count {
+    margin-top:28px;
+    float:right
+}
+
+.browse-button {
+    -moz-border-radius: 4px 4px 4px 4px;
+    -webkit-border-radius: 0;
+    border-radius: 4px 4px 4px 4px;
+    width: 7em;
+    margin-bottom: 12px;
+    margin-left: 4px;
+}
+
+#breadcrumb {
+  float: left;
+  margin-top:-8px;
+  margin-left:-36px;
+  list-style: none;
+  display: inline-block;
+  font-size:110%;
+}
+/*
+#breadcrumb .icon {
+  font-size: 14px;
+}
+*/
+#breadcrumb li {
+  float: left;
+  cursor: pointer;
+}
+#breadcrumb li a, .browse-button {
+  color: #FFF;
+  display: block;
+  /*background: #3498db;*/
+  text-decoration: none;
+  position: relative;
+  height: 34px;
+  line-height: 34px;
+  padding: 0 10px 0 5px;
+  text-align: center;
+  margin-right: 8px;
+  margin-top: 16px;
+  cursor: pointer;
+  border: 1px solid #888;
+}
+
+#breadcrumb li a {
+  -moz-border-radius: 4px 4px 4px 4px;
+  -webkit-border-radius: 0;
+  border-radius: 4px 4px 4px 4px;
+}
+#breadcrumb li a:hover, .browse-button:hover {
+  background-color: #777;
+}
+
+#spinner {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  opacity: 0.5;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+::cue, .lg-toolbar, .lg-sub-html, #lg-counter, #lg-counter-all, button.lg-prev.lg-icon, button.lg-next.lg-icon {
+    color: #fff;
+    background-color: transparent;
+    text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
+}
+
