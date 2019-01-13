@@ -180,7 +180,7 @@ function dirsHtml(dirs, url) {
         html+="<div class=\"title\">Photo Gallery</div>";
     }
     
-    html+= "<div class\=section\" style=\"clear:both\"><div class=\"folder-grid\"";
+    html+= "<div class\=section\" style=\"clear:both\"><div class=\"folder-grid";
     if (((window.innerWidth-16)/150)>=(len*1.2)) {
         html+=" folder-grid-few";
     }
@@ -238,7 +238,7 @@ function imagesHtml(images, url) {
     }
     var lastYear = "0000";
 
-    html+="</p><div class=\"section\"><div id=\"imageGallery\" class=\"image-grid"
+    html+="</p><div class=\"section\"><div id=\"imageGallery\" class=\"image-grid";
     if (((window.innerWidth-16)/120)>=(len*1.2)) {
         html+=" image-grid-few";
     }
