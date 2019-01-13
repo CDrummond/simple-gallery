@@ -102,7 +102,10 @@ def findFirstImage(directory):
     if len(candidates)>0:
         candidates=sorted(candidates, key=lambda k: k['name'])
 
-        image='/'.join(candidates[0]['parts'][1:])+'/'+candidates[0]['name']
+        dirParts = len(directory.split("/"))
+        if dirParts>0:
+            dirParts-=1
+        image='/'.join(candidates[0]['parts'][dirParts:])+'/'+candidates[0]['name']
         saveInfo(directory, image)
         res=utils.removeExtension(resolveLink(directory, image))+".jpg"
         if res.startswith("/"):
