@@ -81,7 +81,7 @@ def findFirstImage(directory):
     if len(videos)>0:
         videos.sort()
         saveInfo(directory, videos[0])
-        return utils.removeExtension(resolveLink(directory, videos[0]))+".jpg"
+        return resolveLink(directory, videos[0])
     
     sub.sort()
     candidates=[]
@@ -105,7 +105,7 @@ def findFirstImage(directory):
         dirParts = len(filter(None, directory.split("/")))
         image='/'.join(candidates[0]['parts'][dirParts:])+'/'+candidates[0]['name']
         saveInfo(directory, image)
-        res=utils.removeExtension(resolveLink(directory, image))+".jpg"
+        res=resolveLink(directory, image)
         if res.startswith("/"):
             res=res[1:]
         return res
