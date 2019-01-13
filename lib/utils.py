@@ -4,7 +4,9 @@
 # Licensed under the MIT license.
 #
 
+import json
 import os
+import subprocess
 import time
 from . import log
 
@@ -89,23 +91,10 @@ def timestamp(fileName):
     except OSError:
         return 0
 
-def createImge(source, dest, fType, size, quality):
-    if os.path.exists(dest):
-        return True
+def videoDuration(vid):
+    try:
+        out,_ = subprocess.Popen(["ffprobe", vid, "-print_format", "json", "-loglevel", "panic", "-show_streams"], stdout = subprocess.PIPE, stderr = subprocess.STDOUT).communicate()
+        return int(float(json.loads(out)["streams"][0]["duration"]))
+    except:
+        return None
 
-    if not os.path.exists(source):
-        video=utils.removeExtension(source)+".mp4"
-        if os.path.exists(source):
-            source=video
-    log.info("Creating "+dest+" @"+size+" for "+source)
-    if 'image'==fType:
-        subprocess.call([config.convert, "-auto-orient", "-resize", size+">", "-quality", str(quality), source, dest])
-    else:
-        ffmpegTmp=dest+".tmp.png"
-        if os.path.exists(ffmpegTmp):
-            os.remove(ffmpegTmp)
-        subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', ffmpegTmp])
-        subprocess.call([config.convert, "-resize", size+">", "-quality", str(quality), ffmpegTmp, dest])
-        if os.path.exists(ffmpegTmp):
-            os.remove(ffmpegTmp)
-    return os.path.exists(dest)

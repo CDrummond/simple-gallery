@@ -25,7 +25,13 @@ def createImage(source, dest, fType, size, quality):
         ffmpegTmp=dest+".tmp.png"
         if os.path.exists(ffmpegTmp):
             os.remove(ffmpegTmp)
-        subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', ffmpegTmp])
+        thumbPos = 0
+        duration = utils.videoDuration(source)
+        if duration > 10:
+            thumbPos = 5
+        elif duration > 2:
+            thumbPos = 1
+        subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', '-ss', str(thumbPos), ffmpegTmp])
         subprocess.call([config.convert, "-resize", size+">", "-quality", str(quality), ffmpegTmp, dest])
         if os.path.exists(ffmpegTmp):
             os.remove(ffmpegTmp)
