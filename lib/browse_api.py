@@ -138,14 +138,14 @@ def getItems(path, ignoreFolders, filt):
                 item['name']=utils.fixName(entry)
                 item['thumb']=findFirstImage(path+entry+'/')
                 if isYear(item['name']):
-                    item['sort']=str(3000-int(item['name']))
+                    item['sort']="A:"+str(3000-int(item['name']))
                 elif item['name'] in MONTHS:
                     parts = utils.fileNameNoExt(item['thumb']).split('-')
-                    item['sort'] = "%s.%02d.00" % (parts[0], MONTHS.index(item['name'])+1)
+                    item['sort'] = "B:%s.%02d.00" % (parts[0], MONTHS.index(item['name'])+1)
                 elif item['thumb']:
                     try:
                         parts = utils.fileNameNoExt(item['thumb']).split('-')
-                        item['sort'] = "%s.%s.%s" % (parts[0], parts[1], parts[2])
+                        item['sort'] = "B:%s.%s.%s" % (parts[0], parts[1], parts[2])
                     except:
                         log.error('Failed to decode thumb %s' % item['thumb'])
                 #log.info("XXXXXX %s => %s" % (item['name'], item['sort']))
