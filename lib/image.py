@@ -26,13 +26,19 @@ def createImage(source, dest, fType, size, quality):
         if os.path.exists(ffmpegTmp):
             os.remove(ffmpegTmp)
         thumbPos = 0
-        duration = utils.videoDuration(source)
+        duration, portrait = utils.videoInfo(source)
         if duration > 10:
             thumbPos = 5
         elif duration > 2:
             thumbPos = 1
-        subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', '-ss', str(thumbPos), ffmpegTmp])
-        subprocess.call([config.convert, "-resize", size+">", "-quality", str(quality), ffmpegTmp, dest])
+        if portrait and config.scaledSize == size:
+            # Add black bars
+            vidSize=size.replace("x", ":")
+            subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', '-ss', str(thumbPos), "-qscale:v", "8",
+                            "-vf", "scale=%s:force_original_aspect_ratio=decrease,pad=%s:(ow-iw)/2:(oh-ih)/2,setsar=1" % (vidSize, vidSize), dest])
+        else:
+            subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', '-ss', str(thumbPos), ffmpegTmp])
+            subprocess.call([config.convert, "-resize", size+">", "-quality", str(quality), ffmpegTmp, dest])
         if os.path.exists(ffmpegTmp):
             os.remove(ffmpegTmp)
     return os.path.exists(dest)

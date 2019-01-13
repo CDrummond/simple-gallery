@@ -14,7 +14,7 @@ port=8008
 sourceFolder='photos'
 cacheFolder='thumb'
 thumbSize="200x200"
-scaledSize="1440x1080"
+scaledSize="1920x1080"
 htmlThumbSize=150
 thumbQuality=75
 scaledQuality=82
@@ -23,6 +23,7 @@ scaledSuffix='_scaled.jpg'
 serverRoot='/source'
 convert=None
 ffmpeg=None
+ffprobe=None
 ignoreFolders=None
 
 def load():
@@ -39,6 +40,7 @@ def load():
     global serverRoot
     global convert
     global ffmpeg
+    global ffprobe
     global ignoreFolders
     enableLog = log.enabled
     parser = argparse.ArgumentParser(description='Gallery WebApp.')
@@ -109,6 +111,7 @@ def load():
         cacheFolder+='/'
     convert=utils.which('convert')
     ffmpeg=utils.which('ffmpeg')
+    ffprobe=utils.which('ffprobe')
     if None==ffmpeg:    
         ffmpeg=utils.which('avconv')
     if None==ffmpeg:
@@ -116,6 +119,9 @@ def load():
         return None
     if None==convert:
         log.error("Please install 'convert' from imagemagick")
+        return None
+    if None==ffprobe:
+        log.error("Please install 'ffprobe'")
         return None
     log.enabled = enableLog
     return args.mode

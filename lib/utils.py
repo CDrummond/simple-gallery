@@ -91,10 +91,18 @@ def timestamp(fileName):
     except OSError:
         return 0
 
-def videoDuration(vid):
+def videoInfo(vid):
     try:
         out,_ = subprocess.Popen(["ffprobe", vid, "-print_format", "json", "-loglevel", "panic", "-show_streams"], stdout = subprocess.PIPE, stderr = subprocess.STDOUT).communicate()
-        return int(float(json.loads(out)["streams"][0]["duration"]))
-    except:
-        return None
+        info = json.loads(out)
+        duration = int(float(info["streams"][0]["duration"]))
+        portrait = False
+        if "tags" in info["streams"][0] and "rotate" in info["streams"][0]["tags"]:
+            rotate = int(info["streams"][0]["tags"]["rotate"])
+            if rotate == 90 or rotate == 270:
+                portrait = True
+        return duration, portrait
+    except Exception,e:
+        log.error("EX:"+str(e))
+        return None, False
 
