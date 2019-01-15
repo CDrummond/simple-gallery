@@ -167,6 +167,12 @@ body {
     width: 7em;
     margin-bottom: 12px;
     margin-left: 4px;
+    float:left;
+}
+
+a.star-icon {
+    vertical-align:top !important;
+    line-height:22px !important;
 }
 
 #breadcrumb {

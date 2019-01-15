@@ -17,6 +17,9 @@ var htmlEntityMap = {
 
 const THIS_DAY = 'This Day';
 const ALL = 'All';
+const STARRED = 'Starred';
+const HOME = 'Home';
+const STARRED_HASH="(Starred)";
 
 function escapeHtml(string) {
     return String(string).replace(/[&<>"'\/]/g, function (s) {
@@ -95,6 +98,38 @@ function isMobile() {
            navigator.userAgent.indexOf("Windows Phone") !== -1;
 }
 
+var currentIndex = undefined;
+var starred = new Set();
+
+function toggleStar() {
+    var star = $('#star-icon');
+    var image = $('#imageGallery')[0].childNodes[currentIndex];
+    var url = image.attributes['star-url'].nodeValue;
+    var filename = url.substring(url.lastIndexOf('/')+1);
+    if (undefined==starred[filename]) {
+        starred[filename]={url: url, name: image.attributes['data-sub-html'].nodeValue};
+        star[0].innerHTML = "<b>&#x2605;</b>";
+    } else {
+        starred[url]=undefined;
+        star[0].innerHTML = "<b>&#9734;</b>";
+    }
+}
+
+function setStar() {
+    var star = $('#star-icon');
+    if (undefined==star[0]) {
+        $('.lg-toolbar').append('<a class=\"lg-icon star-icon\" href=\"javascript:toggleStar()\" id=\"star-icon\"></a>');
+        star = $('#star-icon');
+    }
+    var url = $('#imageGallery')[0].childNodes[currentIndex].attributes['data-download-url'].nodeValue
+    var filename = url.substring(url.lastIndexOf('/')+1);
+    if (undefined==starred[filename]) {
+        star[0].innerHTML = "<b>&#9734;</b>";
+    } else {
+        star[0].innerHTML = "<b>&#x2605;</b>";
+    }
+}
+
 function setContent(content) {
     var div=document.getElementById('content');
     clear(div);
@@ -117,6 +152,16 @@ function setContent(content) {
             var classToAdd = data.$items.eq(index).attr('image');
             data.$slide.eq(index).find('.lg-').addClass(classToAdd);
         });
+
+        imageGallery.on('onSlideItemLoad.lg', function (event, index) {
+            currentIndex = index;
+            setStar();
+        });
+
+        imageGallery.on('onAfterSlide.lg', function (event, prevIndex, index, fromTouch, fromThumb) {
+            currentIndex = index;
+            setStar();
+        });
     }
 
     window.scrollTo(0, 0);
@@ -128,7 +173,7 @@ function showRoot() {
     path = [];
     var div=document.getElementById('content');
     clear(div);
-    browseFolder(undefined, 'Home');
+    browseFolder(undefined, HOME);
 }
 
 function httpGet(url, handler, hash) {
@@ -196,6 +241,9 @@ function dirsHtml(dirs, url) {
     } else {
         html+="<div class=\"browse-button\" onclick=\"browseFolder('/?filter=today','"+THIS_DAY+"')\">"+THIS_DAY+"</div>";
     }
+    if (Object.keys(starred).length>0) {
+        html+="<div class=\"browse-button\" onclick=\"showStarred()\">"+STARRED+"</div>";
+    }
     html+="</div>";
     return html;
 }
@@ -252,18 +300,30 @@ function imagesHtml(images, url) {
             }
         }
         if (images[i].video) {
-            html+="<div  class=\"gallery-item video-container\" data-poster=\"/api/scaled"+addSlash(images[i].url)+"\" data-sub-html=\""+escapeQuotes(images[i].name)+"\" data-html=\"#video"+i+"\">";
+            html+="<div  class=\"gallery-item video-container\" data-poster=\"/api/scaled"+addSlash(images[i].url)+"\" data-sub-html=\""+escapeQuotes(images[i].name)+"\" data-html=\"#video"+i+"\" star-url=\""+images[i].url+"\">";
             html+="<img data-html=\"#video"+i+"\" class=\"image-grid-thumb\" src=\"images/placeholder.png\" data-src=\"/api/thumb"+addSlash(images[i].url)+"\"/>";
             html+="<img class=\"video-overlay\" src=\"images/video-overlay.png\"/>";
             html+="</div>";
         } else {
-            html+="<div class=\"gallery-item\" data-download-url=\""+rootPath()+addSlash(images[i].url)+"\" data-src=\"/api/scaled"+addSlash(images[i].url)+"\" data-sub-html=\""+escapeQuotes(images[i].name)+"\"><a href=\"\">";
+            html+="<div class=\"gallery-item\" data-download-url=\""+rootPath()+addSlash(images[i].url)+"\" data-src=\"/api/scaled"+addSlash(images[i].url)+"\" data-sub-html=\""+escapeQuotes(images[i].name)+"\" star-url=\""+images[i].url+"\"><a href=\"\">";
             html+="<img class=\"image-grid-thumb\" src=\"images/placeholder.png\" data-src=\"/api/thumb"+addSlash(images[i].url)+"\"/></a></div>";
         }
     }
     html+="</div>";
     
     return html;
+}
+
+function showStarred() {
+    var images = [];
+    Object.keys(starred).sort().forEach(function(key) {
+        images.push(starred[key]);
+    });
+    var html = "<ul id=\"breadcrumb\"><li><a onclick=\"browseFolder('/','"+HOME+"',9)\">"+HOME+"</a></li>"+
+               "<li><a>"+STARRED+"</a></i></ul>";
+    html+=imagesHtml(images, undefined);
+    setContent(html);
+    setHash("#"+STARRED_HASH);
 }
 
 function browseResponseHandler(resp, hash, url) {
