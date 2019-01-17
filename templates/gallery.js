@@ -108,10 +108,10 @@ function toggleStar() {
     var filename = url.substring(url.lastIndexOf('/')+1);
     if (undefined==starred[filename]) {
         starred[filename]={url: url, name: image.attributes['data-sub-html'].nodeValue};
-        star[0].innerHTML = "<b>&#x2605;</b>";
+        setStarText(star, "&#x2605;");
     } else {
-        starred[url]=undefined;
-        star[0].innerHTML = "<b>&#9734;</b>";
+        delete starred[filename];
+        setStarText(star, "&#9734;");
     }
 }
 
@@ -124,10 +124,19 @@ function setStar() {
     var url = $('#imageGallery')[0].childNodes[currentIndex].attributes['data-download-url'].nodeValue
     var filename = url.substring(url.lastIndexOf('/')+1);
     if (undefined==starred[filename]) {
-        star[0].innerHTML = "<b>&#9734;</b>";
+        setStarText(star, "&#9734;");
     } else {
-        star[0].innerHTML = "<b>&#x2605;</b>";
+        setStarText(star, "&#x2605;");
     }
+}
+
+function setStarText(star, ch) {
+    var html = "<b>"+ch+"</b>";
+    var count = Object.keys(starred).length;
+    if (count>0) {
+        html+="<div style=\"font-size:25%\"> (" + count + ")</div>";
+    }
+    star[0].innerHTML = html;
 }
 
 function setContent(content) {
