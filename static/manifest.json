@@ -3,7 +3,7 @@
   "short_name": "Gallery",
   "theme_color": "#424242",
   "background_color": "#424242",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "scope": "/",
   "start_url": "/",
