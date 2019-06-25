@@ -234,15 +234,20 @@ function dirsHtml(dirs, url) {
         html+="<div class=\"title\">Photo Gallery</div>";
     }
     
-    html+= "<div class\=section\" style=\"clear:both\"><div class=\"folder-grid";
-    if (((window.innerWidth-16)/150)>=(len*1.2)) {
-        html+=" folder-grid-few";
-    }
+    //var few = ((window.innerWidth-16)/200)>=(len*1.2);
+    html+= "<div class\=section\" style=\"clear:both\"><div class=\"image-grid";
+    //if (few) {
+    //    html+=" image-grid-few";
+    //}
     html+="\">";
     
     for (var i=0; i<len; ++i) {
         html+="<div onclick=\"browseFolder('"+escapeQuotes(dirs[i].url)+"','"+escapeQuotes(dirs[i].name)+"')\">";
-        html+="<img src=\"images/placeholder.png\" data-src=\"/api/thumb/"+dirs[i].thumb+"\"></img><div class=\"folder-grid-text\">"+escapeHtml(dirs[i].name)+"</div></div>";
+        html+="<img class=\"image-grid-thumb\" src=\"images/placeholder.png\" data-src=\"/api/thumb/"+dirs[i].thumb+"\"></img><div class=\"image-grid-text"
+        //if (few) {
+        //    html+=" image-grid-text-few";
+        //}
+        html+="\">"+escapeHtml(dirs[i].name)+"</div></div>";
     }
     html+="</div>"
     if (url!='/api/browse/') {
@@ -296,7 +301,7 @@ function imagesHtml(images, url) {
     var lastYear = "0000";
 
     html+="</p><div class=\"section\"><div id=\"imageGallery\" class=\"image-grid";
-    if (((window.innerWidth-16)/120)>=(len*1.2)) {
+    if (((window.innerWidth-16)/200)>=(len*1.2)) {
         html+=" image-grid-few";
     }
     html+="\">";
