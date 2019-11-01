@@ -121,7 +121,11 @@ function setStar() {
         $('.lg-toolbar').append('<a class=\"lg-icon star-icon\" href=\"javascript:toggleStar()\" id=\"star-icon\"></a>');
         star = $('#star-icon');
     }
-    var url = $('#imageGallery')[0].childNodes[currentIndex].attributes['data-download-url'].nodeValue
+    var ddlu = $('#imageGallery')[0].childNodes[currentIndex].attributes['data-download-url'];
+    if (!ddlu) {
+        return;
+    }
+    var url = ddlu.nodeValue
     var filename = url.substring(url.lastIndexOf('/')+1);
     if (undefined==starred[filename]) {
         setStarText(star, "&#9734;");
