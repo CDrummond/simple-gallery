@@ -301,9 +301,9 @@ function imagesHtml(images, url) {
     var lastYear = "0000";
 
     html+="</p><div class=\"section\"><div id=\"imageGallery\" class=\"image-grid";
-    if (((window.innerWidth-16)/200)>=(len*1.2)) {
-        html+=" image-grid-few";
-    }
+    //if (((window.innerWidth-16)/200)>=(len*1.2)) {
+    //    html+=" image-grid-few";
+    //}
     html+="\">";
     for (var i=0; i<len; ++i) {
         if (isToday) {
