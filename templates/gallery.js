@@ -46,6 +46,12 @@ window.onload = function() {
 /* Allow history navigation by using URL hash to store position */
 var currentHash = '';
 window.onhashchange = function() {
+    /* If showing image/video then ignore back button */
+    var star = document.getElementById("star-icon");
+    if (undefined!=star && currentHash.length>0) {
+        navigateTo(currentHash);
+        return;
+    }
     if (currentHash!==window.location.hash && undefined!==window.location.hash && window.location.hash != '#undefined') {
         navigateTo(window.location.hash);
     }
