@@ -16,7 +16,7 @@ import lib.log as log
 import lib.cachegen as cachegen
 
 def startServer():
-    root = static.File(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'))
+    root = static.File(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ui'))
     root.putChild('source', static.File(config.sourceFolder))
     root.putChild('api', WSGIResource(reactor, reactor.getThreadPool(), flask_app.app))
     site=Site(root)

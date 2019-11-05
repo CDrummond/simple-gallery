@@ -1,0 +1,35 @@
+.pswp__material, .pswp__material:before {
+    font-family:"Material Icons";
+    font-size:20px;
+    text-decoration:none;
+    background:none!important;
+    background-image:none!important;
+}
+
+.pswp__button--playpause.play, .pswp__button--playpause.play:before {
+    content:"\e039";
+}
+
+.pswp__button--playpause.pause, .pswp__button--playpause.pause:before {
+    content:"\e036";
+}
+
+.pswp__button--star.starred, .pswp__button--star.starred:before {
+    content:"\e838";
+}
+
+.pswp__button--star.unstarred, .pswp__button--star.unstarred:before {
+    content:"\e83a";
+}
+
+.pswp__button--download, .pswp__button--download:before {
+    content:"\e2c4";
+}
+
+.pswp__button {
+    outline: none;
+}
+
+.pswp__caption__center {
+    text-align: center;
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<!--
+  Gallery WebApp
+  Copyright 2019 Craig Drummond <craig.p.drummond@gmail.com>
+  Licensed under the MIT license.
+-->
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <title>Gallery</title>
+  <link href="font/font.css?r=48" rel="stylesheet">
+  <link href="lib/vuetify.min.css?r=1.5.16" rel="stylesheet">
+  <link href="lib/vue-virtual-scroller.css?r=1.0.0-rc2" rel="stylesheet">
+  <link href="lib/photoswipe/photoswipe.css?r=4.1.2" rel="stylesheet">
+  <link href="lib/photoswipe/default-skin/default-skin.css?r=4.1.2" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+  <link href="css/photoswipe-extra.css" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="application-name" content="Gallery">
+  <link href="images/icon-192.png" rel="icon shortcut" sizes="192x192">
+  <link href="images/icon-192-ios.png" rel="apple-touch-icon" sizes="192x192">
+ </head>
+ <body>
+  <div id="app" v-cloak>
+   <v-app class="gallery-app" dark>
+    <gallery-toolbar></gallery-toolbar>
+    <gallery-view></gallery-view>
+    <div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+     <div class="pswp__bg"></div>
+     <div class="pswp__scroll-wrap">
+      <div class="pswp__container">
+       <div class="pswp__item"></div>
+       <div class="pswp__item"></div>
+       <div class="pswp__item"></div>
+      </div>
+      <div class="pswp__ui pswp__ui--hidden">
+       <div class="pswp__top-bar">
+        <div class="pswp__counter"></div>
+        <button class="pswp__button pswp__button--close"></button>
+        <button class="pswp__button pswp__button--fs"></button>
+        <button class="pswp__button pswp__button--zoom"></button>
+        <!-- custom slideshow button: -->
+        <button class="pswp__button pswp__material pswp__button--playpause" id="pswpPlayPause"></button>
+        <button class="pswp__button pswp__material pswp__button--star" id="pswpStar"></button>
+        <button class="pswp__button pswp__material pswp__button--download" id="pswpDownload" title="Download"></button>
+        <div class="pswp__preloader">
+         <div class="pswp__preloader__icn">
+          <div class="pswp__preloader__cut">
+           <div class="pswp__preloader__donut"></div>
+          </div>
+         </div>
+        </div>
+       </div>
+       <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+        <div class="pswp__share-tooltip"></div>
+       </div>
+       <button class="pswp__button pswp__button--arrow--left"></button>
+       <button class="pswp__button pswp__button--arrow--right"></button>
+       <div class="pswp__caption">
+        <div class="pswp__caption__center"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </v-app>
+  </div>
+  <script src="lib/axios.min.js?r=0.19.0"></script>
+  <script src="lib/vue.min.js?r=2.6.10"></script>
+  <script src="lib/vuetify.min.js?r=1.5.16"></script>
+  <script src="lib/intersection-observer.min.js?r=0.5.0"></script>
+  <script src="lib/vue-virtual-scroller.min.js?r=1.0.0-rc2"></script>
+  <script src="lib/vuetify-confirm.min.js"></script>
+  <script src="lib/photoswipe/photoswipe.min.js?r=4.1.2"></script>
+  <script src="lib/photoswipe/photoswipe-ui-default.min.js?r=4.1.2"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="js/toolbar.js"></script>
+  <script src="js/main.js"></script>
+ </body>
+</html>
+
