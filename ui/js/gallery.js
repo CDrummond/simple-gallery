@@ -55,7 +55,7 @@ Vue.component('gallery-view', {
         view = this;
         this.slideshow = { running:false, once:false, timer:undefined, playPause:undefined, download:undefined, star:undefined};
         this.history = [];
-        this.starred = new Set();
+        this.starred = new Map();
 
         bus.$on('setLevel', function(level) {
             this.goTo(level);
@@ -64,7 +64,19 @@ Vue.component('gallery-view', {
             if ('thisday'==type) {
                 this.fetchItems('/?filter=today', 'This day');
             } else if ('starred'==type) {
-                // TODO!!!
+                this.history.push({path:this.path, name:this.name, items:this.items, pos:this.imageGridElement.scrollTop});
+                this.name='Starred';
+                bus.$emit('updateHistory', this.name, this.history);
+                this.items=[];
+                for (var [key, value] of this.starred) {
+                    this.items.push(value);
+                }
+                this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
+                this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
+                this.layoutGrid();
+                this.$nextTick(function () {
+                    setScrollTop(this.imageGridElement, 0);
+                });
             }
         }.bind(this));
         bus.$on('windowWidthChanged', function() {
@@ -212,7 +224,7 @@ Vue.component('gallery-view', {
             if (this.starred.has(url)) {
                 this.starred.delete(url);
             } else {
-                this.starred.add(url);
+                this.starred.set(url, view.items[idx]);
             }
             this.setStaredState();
             bus.$emit('haveStarred', this.starred.size>0);
