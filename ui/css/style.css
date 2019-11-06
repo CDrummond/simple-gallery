@@ -337,9 +337,9 @@ a {
  height:calc((var(--vh, 1vh)*100) - 32px); /* Leave space for photo-swipe title */
 }
 
-::cue { /* Video subtitles */
- color: white;
- background-color: transparent;
- text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
+::cue, .lg-toolbar, .lg-sub-html, #lg-counter, #lg-counter-all, button.lg-prev.lg-icon, button.lg-next.lg-icon {
+    color: #fff;
+    background-color: transparent;
+    text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
 }
 

@@ -4,8 +4,6 @@
  * Licensed under the MIT license.
  */
 
-const SLIDESHOW_DELAY = 5000;
-
 const GRID_SIZES = [ {sz:133, clz:"image-grid-a"},
                      {sz:138, clz:"image-grid-b"},
                      {sz:143, clz:"image-grid-c"},
@@ -60,7 +58,6 @@ Vue.component('gallery-view', {
     },
     created() {
         view = this;
-        this.slideshow = { running:false, once:false, timer:undefined, playPause:undefined, download:undefined, star:undefined};
         this.history = [];
         this.starred = new Map();
 
@@ -218,74 +215,33 @@ Vue.component('gallery-view', {
             }
         },
         startSlideShow(item, index, event) {
-            this.slideshow.running=false;
-            this.slideshow.once=false;
-            this.slideshow.starred=this.starred.size;
-            if (!this.slideshow.playPause) {
-                this.slideshow.playPause = document.getElementById("pswpPlayPause");
-                this.slideshow.playPause.addEventListener("click", function() {
-                    view.slideshow.running=!view.slideshow.running;
-                    view.setSlideShowState();
-                });
-            }
-            if (!this.slideshow.download) {
-                this.slideshow.download = document.getElementById("pswpDownload");
-                this.slideshow.download.addEventListener("click", function() {
-                    var idx = view.gallery.getCurrentIndex();
-                    var url = this.serverRoot + view.items[idx].image;
-                    var name = url.substring(url.lastIndexOf('/')+1);
-                    download(url, name);
-                });
-            }
-
-            if (!this.slideshow.star) {
-                this.slideshow.star = document.getElementById("pswpStar");
-                this.slideshow.star.addEventListener("click", function() {
-                    view.toggleStarred();
-                });
-            }
-            this.setSlideShowState();
-            var images = [];
-            for (var i=0; i<this.items.length; ++i) {
-                if (this.items[i].isvideo) {
-                    images.push({videosrc:this.items[i].image, title:this.items[i].name, w:600, h:400,
-                                 html:'<video class="video-js" controls preload="auto" data-setup="{}" poster="/api/scaled"'+this.items[i].image+'>'+
-                                      '<source src="'+this.serverRoot+this.items[i].image+'" type="video/mp4">'+
-                                      '<track kind="subtitles" src="'+this.serverRoot+this.items[i].image.split('.').slice(0, -1).join('.')+'.vtt" label="Subtitles" default></track>'+
-                                      '</video>'});
+            var items=[];
+            for (var i=0, len=this.items.length; i<len; ++i) {
+                var item=this.items[i];
+                if (item.isvideo) {
                 } else {
-                    images.push({src:'/api/scaled'+this.items[i].image, title:this.items[i].name, w:0, h:0});
+                    items.push({src:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
+                                downloadUrl:this.serverRoot+this.items[i].image});
                 }
             }
-            this.gallery = new PhotoSwipe(document.querySelectorAll('.pswp')[0], PhotoSwipeUI_Default, images, {index: index});
-            this.gallery.listen('gettingData', function (index, item) {
-                if (item.w < 1 || item.h < 1) {
-                    var img = new Image();
-                    img.onload = function () {
-                        item.w = this.width;
-                        item.h = this.height;
-                        view.gallery.updateSize(true);
-                    };
-                    img.src = item.src;
-                }
-            });
-            this.gallery.listen('afterChange', function () {
-                if (view.slideshow.running && view.slideshow.once) {
-                    view.slideshow.once = false;
-                    view.setSlideShowTimeout();
-                }
+            if (undefined==this.gallery) {
+                this.gallery=document.getElementById('lightgallery');
+            }
+            this.gallery.addEventListener('onCloseAfter', function (event) {
+                window.lgData[view.gallery.getAttribute('lg-uid')].destroy(true);
+            }, false);
+            /*
+            this.gallery.addEventListener('onSlideItemLoad', function (event) {
+                view.currentIndex = event.detail.index;
                 view.setStaredState();
             });
-            this.gallery.listen('destroy', function () {
-                view.gallery = undefined;
-                view.slideshow.running=false;
-                view.setSlideShowTimeout();
-                // If showing starred items, and count has changed, then update view
-                if (view.path==STARRED_ACTION.id && view.slideshow.starred!=view.starred.size) {
-                    view.showStarredItems();
-                }
+
+            this.gallery.addEventListener('onAfterSlide', function (event) {
+                view.currentIndex = event.detail.index;
+                view.setStaredState();
             });
-            this.gallery.init();
+            */
+            window.lightGallery(this.gallery, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, index:index });
         },
         showStarredItems() {
             this.name='Starred';
@@ -303,6 +259,7 @@ Vue.component('gallery-view', {
             });
         },
         toggleStarred() {
+        /*
             var idx = view.gallery.getCurrentIndex();
             var url = view.items[idx].image;
             if (this.starred.has(url)) {
@@ -316,34 +273,26 @@ Vue.component('gallery-view', {
             }
             window.localStorage.setItem("starred", JSON.stringify(starred));
             this.setStaredState();
+            */
         },
         setStaredState() {
-            var idx = view.gallery.getCurrentIndex();
-            var url = view.items[idx].image;
+/*
+            var url = this.items[this.currentIndex].image;
             var starred = this.starred.has(url);
-            this.slideshow.star.classList.remove(starred ? "unstarred" : "starred");
-            this.slideshow.star.classList.add(starred ? "starred" : "unstarred");
-            this.slideshow.star.title=starred ? "Un-star" : "Star";
-        },
-        setSlideShowState() {
-            this.setSlideShowTimeout();
-            this.slideshow.playPause.classList.remove(this.slideshow.running ? "play" : "pause");
-            this.slideshow.playPause.classList.add(this.slideshow.running ? "pause" : "play");
-            this.slideshow.playPause.title=this.slideshow.running ? "Pause slideshow" : "Start slideshow";
-        },
-        setSlideShowTimeout() {
-            if (this.slideshow.timer) {
-                clearTimeout(this.slideshow.timer);
+
+            var star = document.getElementById('star-icon');
+            if (undefined==star || undefined==star[0]) {
+            console.log("ADD");
+                document.getElementsByClassName('lg-toolbar')[0].append('<a class="lg-icon star-icon" href="javascript:view.toggleStar()" id="star-icon"></a>');
+                star = document.getElementById('star-icon')[0];
             }
-            if (this.slideshow.running) {
-                this.slideshow.timer = setTimeout(function () {
-                    view.slideshow.timer = undefined;
-                    if (view.slideshow.running && !!view.gallery) {
-                        view.slideshow.once = true;
-                        view.gallery.next();
-                    }
-                }, SLIDESHOW_DELAY);
+
+            if (starred) {
+                star[0].innerHTML = '<b>&#x2605;</b>';
+            } else {
+                star[0].innerHTML = '<b>&#9734;</b>';
             }
+            */
         },
         layoutGrid() {
             const ITEM_BORDER = 8;
