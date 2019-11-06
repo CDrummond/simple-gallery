@@ -22,7 +22,14 @@ const GRID_SIZES = [ {sz:133, clz:"image-grid-a"},
                      {sz:198, clz:"image-grid-n"},
                      {sz:203, clz:"image-grid-o"},
                      {sz:208, clz:"image-grid-p"}];
+
+const THIS_DAY_ACTION = {id:'act:thisday', title:'Show photos from this day', icon:'schedule'};
+const STARRED_ACTION  = {id:'act:stared', title:'Show starred photos', icon:'star'};
+const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter' };
+
 var view;
+
+window.HELP_IMPROVE_VIDEOJS = false;
 
 Vue.component('gallery-view', {
     template: `
@@ -60,28 +67,33 @@ Vue.component('gallery-view', {
         bus.$on('setLevel', function(level) {
             this.goTo(level);
         }.bind(this));
-        bus.$on('browse', function(type) {
-            if ('thisday'==type) {
+        bus.$on('action', function(id) {
+            if (THIS_DAY_ACTION.id==id) {
                 this.fetchItems('/?filter=today', 'This day');
-            } else if ('starred'==type) {
+            } else if (STARRED_ACTION.id==id) {
                 this.history.push({path:this.path, name:this.name, items:this.items, pos:this.imageGridElement.scrollTop});
-                this.name='Starred';
-                bus.$emit('updateHistory', this.name, this.history);
-                this.items=[];
-                for (var [key, value] of this.starred) {
-                    this.items.push(value);
-                }
-                this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
-                this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
-                this.layoutGrid();
-                this.$nextTick(function () {
-                    setScrollTop(this.imageGridElement, 0);
-                });
+                this.showStarredItems();
+            } else if (SHOW_ALL_ACTION.id==id) {
+                this.fetchItems(this.path+'?filter=all', this.name+' (All)');
             }
         }.bind(this));
         bus.$on('windowWidthChanged', function() {
             this.layoutGrid();
         }.bind(this));
+
+        this.serverRoot = "";
+        axios.get('/api/config?x=time'+(new Date().getTime())).then((resp) => {
+            if (resp && resp.data && resp.data.serverRoot) {
+                this.serverRoot = resp.data.serverRoot.replace("0.0.0.0", window.location.hostname);
+            }
+        });
+        var starred = window.localStorage.getItem("starred");
+        if (starred) {
+            starred = JSON.parse(starred);
+            for (var i=0, len=starred.length; i<len; ++i) {
+                this.starred.set(starred[i].image, starred[i]);
+            }
+        }
     },
     mounted() {
         this.imageGridElement = document.getElementById("imageGrid");
@@ -101,12 +113,26 @@ Vue.component('gallery-view', {
                 this.items = prev.items;
                 this.name = prev.name;
                 this.path = prev.path;
-                bus.$emit('updateHistory', this.name, this.history);
+                this.updateToolbar();
                 this.layoutGrid();
                 this.$nextTick(function () {
                     setScrollTop(this.imageGridElement, prev.pos);
                 });
             }
+        },
+        updateToolbar() {
+            var actions = [];
+            if (this.path.length>1) {
+                if (this.items.length>0 && this.items[0].isfolder) {
+                    actions.push(SHOW_ALL_ACTION);
+                }
+            } else {
+                if (this.starred.size>0) {
+                    actions.push(STARRED_ACTION);
+                }
+                actions.push(THIS_DAY_ACTION);
+            }
+            bus.$emit('updateToolbar', this.name, this.setSubtitle(), this.history, actions);
         },
         fetchItems(path, name) {
             this.fetchingItems = true;
@@ -115,11 +141,11 @@ Vue.component('gallery-view', {
                 if (path.length>1) { // Don't store history of initiaql state!
                     this.history.push({path:this.path, name:this.name, items:this.items, pos:this.imageGridElement.scrollTop});
                 }
-                bus.$emit('updateHistory', name, this.history);
                 this.fetchingItems = false;
                 this.items=[];
                 this.path=path;
                 this.name=name;
+                this.subtitle = "";
 
                 if (resp && resp.data) {
                     if (resp.data.dirs) {
@@ -140,16 +166,46 @@ Vue.component('gallery-view', {
                         }
                     }
                 }
+
                 this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
                 this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
+                this.updateToolbar();
                 this.layoutGrid();
                 this.$nextTick(function () {
                     setScrollTop(this.imageGridElement, 0);
                 });
             }).catch(err => {
                 this.fetchingItems = false;
-                bus.$emit('showError', 'Failed to obtain photo list');
+                bus.$emit('showError', 'Failed to obtain photo list ('+err+')');
             });
+        },
+        setSubtitle() {
+            if (0==this.items.length) {
+                return 'Nothing found';
+            }
+            var numFolders = 0;
+            var numVideos = 0;
+            var numPhotos = 0;
+            for (var i=0, len=this.items.length; i<len; ++i) {
+                if (this.items[i].isfolder) {
+                    numFolders++;
+                } else if (this.items[i].isvideo) {
+                    numVideos++;
+                } else {
+                    numPhotos++;
+                }
+            }
+            var subtitle="";
+            if (numFolders>0) {
+                subtitle+=numFolders==1 ? "1 Folder" : (numFolders + " Folders");
+            }
+            if (numPhotos>0) {
+                subtitle+=(subtitle.length>1 ? ", " : "")+(numPhotos==1 ? "1 Photo" : (numPhotos + " Photos"));
+            }
+            if (numVideos>0) {
+                subtitle+=(subtitle.length>1 ? ", " : "")+(numVideos==1 ? "1 Video" : (numVideos + " Videos"));
+            }
+            return subtitle;
         },
         click(item, index, event) {
             if (item.isfolder) {
@@ -164,33 +220,42 @@ Vue.component('gallery-view', {
         startSlideShow(item, index, event) {
             this.slideshow.running=false;
             this.slideshow.once=false;
+            this.slideshow.starred=this.starred.size;
             if (!this.slideshow.playPause) {
-                this.playPause = document.getElementById("pswpPlayPause");
-                this.playPause.addEventListener("click", function() {
+                this.slideshow.playPause = document.getElementById("pswpPlayPause");
+                this.slideshow.playPause.addEventListener("click", function() {
                     view.slideshow.running=!view.slideshow.running;
                     view.setSlideShowState();
                 });
             }
             if (!this.slideshow.download) {
-                this.download = document.getElementById("pswpDownload");
-                this.download.addEventListener("click", function() {
+                this.slideshow.download = document.getElementById("pswpDownload");
+                this.slideshow.download.addEventListener("click", function() {
                     var idx = view.gallery.getCurrentIndex();
-                    var url = view.items[idx].image; // TODO! Actual path
+                    var url = this.serverRoot + view.items[idx].image;
                     var name = url.substring(url.lastIndexOf('/')+1);
                     download(url, name);
                 });
             }
 
             if (!this.slideshow.star) {
-                this.star = document.getElementById("pswpStar");
-                this.star.addEventListener("click", function() {
+                this.slideshow.star = document.getElementById("pswpStar");
+                this.slideshow.star.addEventListener("click", function() {
                     view.toggleStarred();
                 });
             }
             this.setSlideShowState();
             var images = [];
             for (var i=0; i<this.items.length; ++i) {
-                images.push({src:'/api/scaled'+this.items[i].image, title:this.items[i].name, w:0, h:0});
+                if (this.items[i].isvideo) {
+                    images.push({videosrc:this.items[i].image, title:this.items[i].name, w:600, h:400,
+                                 html:'<video class="video-js" controls preload="auto" data-setup="{}" poster="/api/scaled"'+this.items[i].image+'>'+
+                                      '<source src="'+this.serverRoot+this.items[i].image+'" type="video/mp4">'+
+                                      '<track kind="subtitles" src="'+this.serverRoot+this.items[i].image.split('.').slice(0, -1).join('.')+'.vtt" label="Subtitles" default></track>'+
+                                      '</video>'});
+                } else {
+                    images.push({src:'/api/scaled'+this.items[i].image, title:this.items[i].name, w:0, h:0});
+                }
             }
             this.gallery = new PhotoSwipe(document.querySelectorAll('.pswp')[0], PhotoSwipeUI_Default, images, {index: index});
             this.gallery.listen('gettingData', function (index, item) {
@@ -215,8 +280,27 @@ Vue.component('gallery-view', {
                 view.gallery = undefined;
                 view.slideshow.running=false;
                 view.setSlideShowTimeout();
+                // If showing starred items, and count has changed, then update view
+                if (view.path==STARRED_ACTION.id && view.slideshow.starred!=view.starred.size) {
+                    view.showStarredItems();
+                }
             });
             this.gallery.init();
+        },
+        showStarredItems() {
+            this.name='Starred';
+            this.items=[];
+            this.path=STARRED_ACTION.id;
+            for (var [key, value] of this.starred) {
+                this.items.push(value);
+            }
+            this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
+            this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
+            this.updateToolbar();
+            this.layoutGrid();
+            this.$nextTick(function () {
+                setScrollTop(this.imageGridElement, 0);
+            });
         },
         toggleStarred() {
             var idx = view.gallery.getCurrentIndex();
@@ -226,22 +310,26 @@ Vue.component('gallery-view', {
             } else {
                 this.starred.set(url, view.items[idx]);
             }
+            var starred = [];
+            for (var [key, value] of this.starred) {
+                starred.push(value);
+            }
+            window.localStorage.setItem("starred", JSON.stringify(starred));
             this.setStaredState();
-            bus.$emit('haveStarred', this.starred.size>0);
         },
         setStaredState() {
             var idx = view.gallery.getCurrentIndex();
             var url = view.items[idx].image;
             var starred = this.starred.has(url);
-            this.star.classList.remove(starred ? "unstarred" : "starred");
-            this.star.classList.add(starred ? "starred" : "unstarred");
-            this.star.title=starred ? "Un-star" : "Star";
+            this.slideshow.star.classList.remove(starred ? "unstarred" : "starred");
+            this.slideshow.star.classList.add(starred ? "starred" : "unstarred");
+            this.slideshow.star.title=starred ? "Un-star" : "Star";
         },
         setSlideShowState() {
             this.setSlideShowTimeout();
-            this.playPause.classList.remove(this.slideshow.running ? "play" : "pause");
-            this.playPause.classList.add(this.slideshow.running ? "pause" : "play");
-            this.playPause.title=this.slideshow.running ? "Pause slideshow" : "Start slideshow";
+            this.slideshow.playPause.classList.remove(this.slideshow.running ? "play" : "pause");
+            this.slideshow.playPause.classList.add(this.slideshow.running ? "pause" : "play");
+            this.slideshow.playPause.title=this.slideshow.running ? "Pause slideshow" : "Start slideshow";
         },
         setSlideShowTimeout() {
             if (this.slideshow.timer) {
@@ -270,7 +358,17 @@ Vue.component('gallery-view', {
             }
 
             // How many columns?
-            var numColumns = Math.min(Math.floor(listWidth/(GRID_SIZES[size].sz+ITEM_BORDER)), this.items.length);
+            var numColumns = Math.max(Math.min(Math.floor(listWidth/(GRID_SIZES[size].sz+ITEM_BORDER)), this.items.length), 1);
+            if (size==GRID_SIZES.length-1) {
+                for (var i=size; i>size-(numColumns>=3 ? 4 : 8); i--) {
+                    var nc = Math.min(Math.floor(listWidth/(GRID_SIZES[i].sz+ITEM_BORDER)), this.items.length);
+                    if (nc>numColumns) {
+                        size=i;
+                        numColumns=nc;
+                        break;
+                    }
+                }
+            }
             if (numColumns != this.grid.numColumns) { // Need to re-layout...
                 changed = true;
                 this.grid.rows=[];

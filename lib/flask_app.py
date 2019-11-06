@@ -9,10 +9,10 @@ from flask import Flask
 from . import browse_api
 from . import scaled_api
 from . import thumb_api
-from . import templates_api
+from . import config_api
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../templates"))
 app.register_blueprint(browse_api.api, url_prefix='/browse')
 app.register_blueprint(thumb_api.api, url_prefix='/thumb')
 app.register_blueprint(scaled_api.api, url_prefix='/scaled')
-app.register_blueprint(templates_api.api, url_prefix='/templates')
+app.register_blueprint(config_api.api, url_prefix='/config')

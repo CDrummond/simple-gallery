@@ -14,7 +14,8 @@ Vue.component('gallery-toolbar', {
   <div v-if="history.length<1" class="v-toolbar__title ellipsis">{{trans.title}}</div>
   <v-menu v-else bottom class="ellipsis">
    <v-toolbar-title slot="activator">
-    <div class="ellipsis">{{title}}</div>
+    <div class="ellipsis" v-bind:class="{'titlemod': subtitle.length>1}">{{title}}</div>
+    <div v-if="subtitle.length>1" class="ellipsis subtext">{{subtitle}}</div>
    </v-toolbar-title>
    <v-list>
     <template v-for="(item, index) in history">
@@ -27,8 +28,11 @@ Vue.component('gallery-toolbar', {
    </v-list>
   </v-menu>
   <v-spacer></v-spacer>
-  <v-btn flat icon v-if="history.length==0 && haveStarred" @click="bus.$emit('browse', 'starred')" class="toolbar-button" :title="trans.starred"><v-icon>star</v-icon></v-btn>
-  <v-btn flat icon v-if="history.length==0" @click="bus.$emit('browse', 'thisday')" class="toolbar-button" :title="trans.thisday"><v-icon>schedule</v-icon></v-btn>
+  <template v-for="(action, index) in actions">
+   <v-btn flat icon @click.stop="bus.$emit('action', action.id)" :title="action.title">
+    <v-icon>{{action.icon}}</v-icon>
+   </v-btn>
+  </template>
  </v-toolbar>
  <v-snackbar v-model="snackbar.show" :multi-line="true" timeout="2500" :color="snackbar.color" top>{{ snackbar.msg }}</v-snackbar>
 </div>
@@ -36,23 +40,22 @@ Vue.component('gallery-toolbar', {
     data() {
         return {
                     title: undefined,
+                    subtitle: undefined,
                     history: [],
-                    haveStarred: false,
+                    actions: [],
                     snackbar: { show:false, msg:undefined, color:undefined },
-                    trans: { title:"Photo Gallery", thisday:"Show photos taken on this day",
-                             stared:"Show starred photos" }
+                    trans: { title:"Photo Gallery" }
                }
     },
     mounted() {
-        bus.$on('updateHistory', function(currentName, history) {
-            this.title = currentName;
+        bus.$on('updateToolbar', function(title, subtitle, history, actions) {
+            this.title = title;
+            this.subtitle = subtitle;
             this.history = [];
             for (var i=0, len=history.length; i<len; ++i) {
                 this.history.push(history[i].name);
             }
-        }.bind(this));
-        bus.$on('haveStarred', function(haveStarred) {
-            this.haveStarred = haveStarred;
+            this.actions=actions;
         }.bind(this));
         bus.$on('showError', function(msg) {
             this.snackbar = {msg:msg, show: true, color: 'error' };
