@@ -4,27 +4,30 @@
  * Licensed under the MIT license.
  */
 
-const GRID_SIZES = [ {sz:133, clz:"image-grid-a"},
-                     {sz:138, clz:"image-grid-b"},
-                     {sz:143, clz:"image-grid-c"},
-                     {sz:148, clz:"image-grid-d"},
-                     {sz:153, clz:"image-grid-e"},
-                     {sz:158, clz:"image-grid-f"},
-                     {sz:163, clz:"image-grid-g"},
-                     {sz:168, clz:"image-grid-h"},
-                     {sz:173, clz:"image-grid-i"},
-                     {sz:178, clz:"image-grid-j"},
-                     {sz:183, clz:"image-grid-k"},
-                     {sz:188, clz:"image-grid-l"},
-                     {sz:193, clz:"image-grid-m"},
-                     {sz:198, clz:"image-grid-n"},
-                     {sz:203, clz:"image-grid-o"},
-                     {sz:208, clz:"image-grid-p"}];
+const GRID_SIZES = [ {sz:133, clz:'image-grid-a'},
+                     {sz:138, clz:'image-grid-b'},
+                     {sz:143, clz:'image-grid-c'},
+                     {sz:148, clz:'image-grid-d'},
+                     {sz:153, clz:'image-grid-e'},
+                     {sz:158, clz:'image-grid-f'},
+                     {sz:163, clz:'image-grid-g'},
+                     {sz:168, clz:'image-grid-h'},
+                     {sz:173, clz:'image-grid-i'},
+                     {sz:178, clz:'image-grid-j'},
+                     {sz:183, clz:'image-grid-k'},
+                     {sz:188, clz:'image-grid-l'},
+                     {sz:193, clz:'image-grid-m'},
+                     {sz:198, clz:'image-grid-n'},
+                     {sz:203, clz:'image-grid-o'},
+                     {sz:208, clz:'image-grid-p'}];
 
 const THIS_DAY_ACTION = {id:'act:thisday', title:'Show photos from this day', icon:'schedule'};
 const STARRED_ACTION  = {id:'act:stared', title:'Show starred photos', icon:'star'};
 const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter' };
+const INFO_ACTION     = {id:'act:info', title:'Show information', icon:'info'};
+const CLEAR_ACTION    = {id:'act:clear', title:'Clear', icon:'delete'};
 
+const HIDDEN_HTML_VIDEO_ID_PREFIX = 'lg-video-elem-';
 var view;
 
 window.HELP_IMPROVE_VIDEOJS = false;
@@ -47,13 +50,26 @@ Vue.component('gallery-view', {
   </RecycleScroller>
  </div>
  <v-progress-circular class="load-progress" v-if="fetchingItems" color="primary" size=72 width=6 indeterminate></v-progress-circular>
+ <v-dialog v-model="showInfo" v-if="showInfo" persistent scrollable width="600">
+  <v-card>
+   <v-card-text id="infoText">
+    <p><template v-for="(item, index) in items">{{item.image}}<br/></template></p>
+   </v-card-text>
+   <v-card-actions>
+    <v-spacer></v-spacer>
+    <v-btn flat @click.native="copyInfo()">Copy to clipboard</v-btn>
+    <v-btn flat @click.native="showInfo=false">Close</v-btn>
+   </v-card-actions>
+  </v-card>
+ </v-dialog>
 </div>
       `,
     data() {
         return {
             items: [],
             fetchingItems: false,
-            grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false}
+            grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
+            showInfo: false
         }
     },
     created() {
@@ -72,19 +88,30 @@ Vue.component('gallery-view', {
                 this.showStarredItems();
             } else if (SHOW_ALL_ACTION.id==id) {
                 this.fetchItems(this.path+'?filter=all', this.name+' (All)');
+            } else if (INFO_ACTION.id==id) {
+                this.showInfo = true;
+            } else if (CLEAR_ACTION.id==id) {
+               this.$confirm('Unstar all photos and videos?', {buttonTrueText:'Unstar all', buttonFalseText:'Cancel'}).then(res => {
+                    if (res) {
+                        this.starred = new Map();
+                        window.localStorage.removeItem('starred');
+                        this.goTo(-1);
+                    }
+                });
+
             }
         }.bind(this));
         bus.$on('windowWidthChanged', function() {
             this.layoutGrid();
         }.bind(this));
 
-        this.serverRoot = "";
+        this.serverRoot = '';
         axios.get('/api/config?x=time'+(new Date().getTime())).then((resp) => {
             if (resp && resp.data && resp.data.serverRoot) {
-                this.serverRoot = resp.data.serverRoot.replace("0.0.0.0", window.location.hostname);
+                this.serverRoot = resp.data.serverRoot.replace('0.0.0.0', window.location.hostname);
             }
         });
-        var starred = window.localStorage.getItem("starred");
+        var starred = window.localStorage.getItem('starred');
         if (starred) {
             starred = JSON.parse(starred);
             for (var i=0, len=starred.length; i<len; ++i) {
@@ -93,10 +120,25 @@ Vue.component('gallery-view', {
         }
     },
     mounted() {
-        this.imageGridElement = document.getElementById("imageGrid");
+        this.imageGridElement = document.getElementById('imageGrid');
         this.goTo(-1);
     },
     methods: {
+        copyInfo() {
+            if (document.selection) {
+                var range = document.body.createTextRange();
+                range.moveToElementText(document.getElementById('infoText'));
+                range.select().createTextRange();
+                document.execCommand('copy');
+                document.selection.empty();
+            } else if (window.getSelection) {
+                var range = document.createRange();
+                range.selectNode(document.getElementById('infoText'));
+                window.getSelection().addRange(range);
+                document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+            }
+        },
         goTo(level) {
             if (level<0) { // -1 == go home
                 this.history = [];
@@ -111,6 +153,7 @@ Vue.component('gallery-view', {
                 this.name = prev.name;
                 this.path = prev.path;
                 this.updateToolbar();
+                this.destroySlideShow();
                 this.layoutGrid();
                 this.$nextTick(function () {
                     setScrollTop(this.imageGridElement, prev.pos);
@@ -122,6 +165,10 @@ Vue.component('gallery-view', {
             if (this.path.length>1) {
                 if (this.items.length>0 && this.items[0].isfolder) {
                     actions.push(SHOW_ALL_ACTION);
+                }
+                if (this.path==STARRED_ACTION.id) {
+                    actions.push(CLEAR_ACTION);
+                    actions.push(INFO_ACTION);
                 }
             } else {
                 if (this.starred.size>0) {
@@ -142,7 +189,7 @@ Vue.component('gallery-view', {
                 this.items=[];
                 this.path=path;
                 this.name=name;
-                this.subtitle = "";
+                this.subtitle = '';
 
                 if (resp && resp.data) {
                     if (resp.data.dirs) {
@@ -167,6 +214,7 @@ Vue.component('gallery-view', {
                 this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
                 this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
                 this.updateToolbar();
+                this.destroySlideShow();
                 this.layoutGrid();
                 this.$nextTick(function () {
                     setScrollTop(this.imageGridElement, 0);
@@ -192,15 +240,15 @@ Vue.component('gallery-view', {
                     numPhotos++;
                 }
             }
-            var subtitle="";
+            var subtitle='';
             if (numFolders>0) {
-                subtitle+=numFolders==1 ? "1 Folder" : (numFolders + " Folders");
+                subtitle+=numFolders==1 ? '1 Folder' : (numFolders + ' Folders');
             }
             if (numPhotos>0) {
-                subtitle+=(subtitle.length>1 ? ", " : "")+(numPhotos==1 ? "1 Photo" : (numPhotos + " Photos"));
+                subtitle+=(subtitle.length>1 ? ', ' : '')+(numPhotos==1 ? '1 Photo' : (numPhotos + ' Photos'));
             }
             if (numVideos>0) {
-                subtitle+=(subtitle.length>1 ? ", " : "")+(numVideos==1 ? "1 Video" : (numVideos + " Videos"));
+                subtitle+=(subtitle.length>1 ? ', ' : '')+(numVideos==1 ? '1 Video' : (numVideos + ' Videos'));
             }
             return subtitle;
         },
@@ -211,37 +259,74 @@ Vue.component('gallery-view', {
                 }
                 this.fetchItems(item.path, item.name);
             } else {
-                this.startSlideShow(item, index, event);
+                this.createSlideShow(item, index, event);
             }
         },
-        startSlideShow(item, index, event) {
-            var items=[];
-            for (var i=0, len=this.items.length; i<len; ++i) {
-                var item=this.items[i];
-                if (item.isvideo) {
-                } else {
-                    items.push({src:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
-                                downloadUrl:this.serverRoot+this.items[i].image});
-                }
+        destroySlideShow() {
+            if (!this.slideshow || !this.slideshow.created) {
+                return;
             }
-            if (undefined==this.gallery) {
-                this.gallery=document.getElementById('lightgallery');
+            window.lgData[this.slideshow.elem.getAttribute('lg-uid')].destroy(true);
+            for (var i=0; i<this.slideshow.numVideos; ++i) {
+                document.getElementById(HIDDEN_HTML_VIDEO_ID_PREFIX+i).remove();
             }
-            this.gallery.addEventListener('onCloseAfter', function (event) {
-                window.lgData[view.gallery.getAttribute('lg-uid')].destroy(true);
-            }, false);
-            /*
-            this.gallery.addEventListener('onSlideItemLoad', function (event) {
-                view.currentIndex = event.detail.index;
-                view.setStaredState();
-            });
+            this.slideshow.created = false;
+            this.slideshow.numVideos = 0;
+        },
+        createSlideShow(item, index, event) {
+            if (!this.slideshow) {
+                this.slideshow = {elem:undefined, star:undefined, created:false, numVideos:0, currentIndex:0};
+            }
+            if (undefined==this.slideshow.elem) {
+                this.slideshow.elem=document.getElementById('lightgallery');
+                this.slideshow.created=false;
 
-            this.gallery.addEventListener('onAfterSlide', function (event) {
-                view.currentIndex = event.detail.index;
-                view.setStaredState();
-            });
-            */
-            window.lightGallery(this.gallery, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, index:index });
+                if (undefined==this.slideshow.star) {
+                    this.slideshow.star = document.createElement('a');
+                    this.slideshow.star.setAttribute('class', 'lg-icon star-icon');
+                    this.slideshow.star.setAttribute('href', 'javascript:view.toggleStarred()');
+                }
+
+                this.slideshow.elem.addEventListener('onAfterOpen', function (event) {
+                    var toolbar = document.getElementsByClassName('lg-toolbar')[0];
+                    if (!toolbar.querySelector('#star-icon')) {
+                        toolbar.appendChild(view.slideshow.star);
+                    }
+                });
+
+                this.slideshow.elem.addEventListener('onAfterSlide', function (event) {
+                    view.slideshow.currentIndex = event.detail.index;
+                    view.setStaredState();
+                });
+            }
+
+            if (this.slideshow.created) {
+                window.lightGallery(this.slideshow.elem);
+                window.lgData[this.slideshow.elem.getAttribute('lg-uid')].index=index;
+            } else {
+                var items=[];
+                for (var i=0, len=this.items.length; i<len; ++i) {
+                    var item=this.items[i];
+                    if (item.isvideo) {
+                        var html='<div style="display:none;" id="'+HIDDEN_HTML_VIDEO_ID_PREFIX+this.slideshow.numVideos+'">'+
+                                 '<video class="lg-video-object lg-html5 video-js vjs-default-skin" controls preload="none">'+
+                                 '<source src="'+this.serverRoot+this.items[i].image+'" type="video/mp4"></source>'+
+                                 '<track kind="subtitles" src="'+this.serverRoot+this.items[i].image.split('.').slice(0, -1).join('.')+'.vtt" label="Subtitles" default></track>'+
+                                 '</video></div>';
+                        this.slideshow.elem.insertAdjacentHTML('beforeend', html);
+                        items.push({poster:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
+                                    html:'#'+HIDDEN_HTML_VIDEO_ID_PREFIX+this.slideshow.numVideos,
+                                    downloadUrl:this.serverRoot+this.items[i].image});
+                        this.slideshow.numVideos++;
+                    } else {
+                        items.push({src:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
+                                    downloadUrl:this.serverRoot+this.items[i].image});
+                    }
+                }
+                window.lightGallery(this.slideshow.elem, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, videojs: true, controls: !IS_MOBILE, index:index });
+
+                this.slideshow.created=true;
+            }
         },
         showStarredItems() {
             this.name='Starred';
@@ -250,49 +335,37 @@ Vue.component('gallery-view', {
             for (var [key, value] of this.starred) {
                 this.items.push(value);
             }
-            this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
+            // Sort by filename here, as sorts are per-folder
+            this.items.sort(function(a, b) { return a.image<b.image ? -1 : 1 });
             this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
             this.updateToolbar();
+            this.destroySlideShow();
             this.layoutGrid();
             this.$nextTick(function () {
                 setScrollTop(this.imageGridElement, 0);
             });
         },
         toggleStarred() {
-        /*
-            var idx = view.gallery.getCurrentIndex();
-            var url = view.items[idx].image;
+            var url = this.items[this.slideshow.currentIndex].image;
             if (this.starred.has(url)) {
                 this.starred.delete(url);
             } else {
-                this.starred.set(url, view.items[idx]);
+                this.starred.set(url, view.items[this.slideshow.currentIndex]);
             }
             var starred = [];
             for (var [key, value] of this.starred) {
                 starred.push(value);
             }
-            window.localStorage.setItem("starred", JSON.stringify(starred));
+            window.localStorage.setItem('starred', JSON.stringify(starred));
             this.setStaredState();
-            */
         },
         setStaredState() {
-/*
-            var url = this.items[this.currentIndex].image;
-            var starred = this.starred.has(url);
-
-            var star = document.getElementById('star-icon');
-            if (undefined==star || undefined==star[0]) {
-            console.log("ADD");
-                document.getElementsByClassName('lg-toolbar')[0].append('<a class="lg-icon star-icon" href="javascript:view.toggleStar()" id="star-icon"></a>');
-                star = document.getElementById('star-icon')[0];
-            }
-
-            if (starred) {
-                star[0].innerHTML = '<b>&#x2605;</b>';
+            var url = this.items[this.slideshow.currentIndex].image;
+            if (this.starred.has(url)) {
+                this.slideshow.star.innerHTML = '<b>&#x2605;</b>';
             } else {
-                star[0].innerHTML = '<b>&#9734;</b>';
+                this.slideshow.star.innerHTML = '<b>&#9734;</b>';
             }
-            */
         },
         layoutGrid() {
             const ITEM_BORDER = 8;
@@ -326,7 +399,7 @@ Vue.component('gallery-view', {
                     for (var j=0; j<numColumns; ++j) {
                         indexes.push(i+j);
                     }
-                    this.grid.rows.push({id:"row."+i+"."+numColumns, indexes:indexes});
+                    this.grid.rows.push({id:'row.'+i+'.'+numColumns, indexes:indexes});
                 }
                 this.grid.numColumns = numColumns;
             }

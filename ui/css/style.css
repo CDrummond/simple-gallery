@@ -13,11 +13,6 @@
  --std-weight:400;
 }
 
-.v-btn__content {
- font-size:var(--std-font-size);
- font-weight:var(--std-weight);
-}
-
 ::-webkit-scrollbar {
  max-height:10px;
  max-width:10px;
@@ -38,6 +33,13 @@ body {
 
 [v-cloak] {
  display:none;
+}
+
+* {
+ text-rendering: optimizeLegibility;
+ line-height: 1.5;
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
 }
 
 a {
@@ -128,16 +130,17 @@ a {
 .image-grid-video-overlay:before {
  position:absolute;
  top:8px !important;
- left:8px !important;
+ left:12px !important;
  font-family:"Material Icons" !important;
- font-size:32px;
- line-height:32px;
+ font-size:40px;
+ line-height:40px;
  text-align:center;
  vertical-align:middle;
  text-decoration:none;
  text-shadow: 0px 0px 8px #000;
  content:"\e039";
- color:white;
+ color:#ccc;
+ opacity:0.75;
  z-index:2;
 }
 
@@ -332,14 +335,32 @@ a {
  margin:auto;
 }
 
-.video-js {
- width:100%;
- height:calc((var(--vh, 1vh)*100) - 32px); /* Leave space for photo-swipe title */
+a.star-icon {
+ vertical-align:top !important;
+ line-height:22px !important;
+ margin-top:-8px !important;
+ font-size:24px !important;
 }
 
 ::cue, .lg-toolbar, .lg-sub-html, #lg-counter, #lg-counter-all, button.lg-prev.lg-icon, button.lg-next.lg-icon {
-    color: #fff;
-    background-color: transparent;
-    text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
+ color: #fff;
+ background-color: transparent;
+ text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
 }
 
+::cue {
+ font-size:var(--std-font-size);
+ font-weight:var(--std-weight);
+ font-family:monospace;
+}
+
+.v-btn__content, .lg-sub-html, #lg-counter, #lg-counter-all {
+ font-size:var(--std-font-size);
+ font-weight:var(--std-weight);
+ font-family:Roboto,sans-serif;
+}
+
+/* Want actual size button, but not zoom in/out buttons */
+#lg-zoom-in, #lg-zoom-out {
+ display:none;
+}
