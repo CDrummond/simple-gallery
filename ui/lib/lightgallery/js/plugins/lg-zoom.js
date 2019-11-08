@@ -121,6 +121,7 @@
         var zoom = function zoom(scaleVal) {
 
             var image = _this.core.outer.querySelector('.lg-current .lg-image');
+            if (!image) return;
             var _x;
             var _y;
 
