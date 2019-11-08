@@ -30,6 +30,8 @@ const CLEAR_ACTION    = {id:'act:clear', title:'Clear', icon:'delete'};
 const HIDDEN_HTML_VIDEO_ID_PREFIX = 'lg-video-elem-';
 var view;
 
+window.HELP_IMPROVE_VIDEOJS = false;
+
 Vue.component('gallery-view', {
     template: `
 <div>
@@ -307,7 +309,7 @@ Vue.component('gallery-view', {
                     var item=this.items[i];
                     if (item.isvideo) {
                         var html='<div style="display:none;" id="'+HIDDEN_HTML_VIDEO_ID_PREFIX+this.slideshow.numVideos+'">'+
-                                 '<video class="lg-video-object lg-html5" controls preload="none">'+
+                                 '<video class="lg-video-object lg-html5 video-js vjs-default-skin" controls preload="none">'+
                                  '<source src="'+this.serverRoot+this.items[i].image+'" type="video/mp4"></source>'+
                                  '<track kind="subtitles" src="'+this.serverRoot+this.items[i].image.split('.').slice(0, -1).join('.')+'.vtt" label="Subtitles" default></track>'+
                                  '</video></div>';
@@ -321,7 +323,7 @@ Vue.component('gallery-view', {
                                     downloadUrl:this.serverRoot+this.items[i].image});
                     }
                 }
-                window.lightGallery(this.slideshow.elem, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, controls: !IS_MOBILE, index:index });
+                window.lightGallery(this.slideshow.elem, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, videojs: true, controls: !IS_MOBILE, index:index });
 
                 this.slideshow.created=true;
             }

@@ -13,6 +13,11 @@ LightGallery.js:
     URL: https://github.com/sachinchoolur/lightgallery.js
     License: GPL3
 
+VideoJS:
+    Version: 5.20.5
+    URL: https://github.com/videojs/video.js
+    License: Apache License, Version 2.0
+
 vue
     Version: 2.6.10
     URL: https://github.com/vuejs/vue
