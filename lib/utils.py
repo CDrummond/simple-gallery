@@ -24,16 +24,20 @@ def removeExtension(fileName):
 def fileNameNoExt(fileName):
     return os.path.basename(fileName).rsplit('.', 1)[0]
 
-def dateStr(t):
-    return timeStr(t, '%A {D} %B %Y')
+def dateStr(t, shortName=False):
+    return timeStr(t, '%A {D} %B %Y', shortName)
 
-def timeStr(t, fmt='%A {D} %B %Y, {H}:%M %p'):
+def timeStr(t, fmt='%A {D} %B %Y, {H}:%M %p', shortName=False):
     hour=t.tm_hour
     if hour>12:
         hour-=12
+    if shortName:
+        fmt=fmt.replace("%A", "%a").replace("%B", "%b")
+    print("FORMAT:%s / %s" % (fmt, str(shortName)))
     return time.strftime(fmt, t).replace('{D}', str(t.tm_mday)+dateEndings.get(t.tm_mday, 'th')).replace('{H}', str(hour))
 
-def fixName(name):
+def fixName(name, shortName=False):
+    print("FIXNAME %s" % str(shortName));
     name=name.replace('_', ' ')
     parts=name.split('-')
     # Check for YYYY-MM-DD HH-MM-SS and return YYYY/MM/DD HH:MM:SS
@@ -52,9 +56,9 @@ def fixName(name):
             name=nameParts[0]+" "+nameParts[1]
         try:
             if name.endswith('xx-xx-xx'):
-                return dateStr(time.strptime(name[:10], '%Y-%m-%d'))
+                return dateStr(time.strptime(name[:10], '%Y-%m-%d'), shortName=shortName)
             else:
-                return timeStr(time.strptime(name.replace('xx', '00'), '%Y-%m-%d %H-%M-%S'))
+                return timeStr(time.strptime(name.replace('xx', '00'), '%Y-%m-%d %H-%M-%S'), shortName=shortName)
         except:
             return parts[0]+'/'+parts[1]+'/'+parts[2]+':'+parts[3]+':'+parts[4]
     return name

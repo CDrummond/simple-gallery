@@ -193,7 +193,7 @@ Vue.component('gallery-view', {
         fetchItems(path, name) {
             this.fetchingItems = true;
             // TODO: Canceling??
-            axios.get('/api/browse'+fixPath(path)+(path.indexOf('?')>0 ? '&' : '?')+'x=time'+(new Date().getTime())).then((resp) => {
+            axios.get('/api/browse'+fixPath(path)+(path.indexOf('?')>0 ? '&' : '?')+'short='+(window.innerWidth<520 ? 1 : 0)+'&x=time'+(new Date().getTime())).then((resp) => {
                 if (path.length>1) { // Don't store history of initiaql state!
                     this.history.push({path:this.path, name:this.name, items:this.items, pos:this.imageGridElement.scrollTop});
                 }

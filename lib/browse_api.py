@@ -118,7 +118,7 @@ def isYear(s):
     except:
         return False
 
-def getItems(path, ignoreFolders, filt):
+def getItems(path, ignoreFolders, filt, shortNames):
     subDirs=[]
     images=[]
     if not path.endswith('/'):
@@ -132,10 +132,10 @@ def getItems(path, ignoreFolders, filt):
         item['sort'] = entry
         if os.path.isdir(config.sourceFolder+path+entry):
             if 'all'==filt:
-                d, i = getItems(path+entry, ignoreFolders, filt)
+                d, i = getItems(path+entry, ignoreFolders, filt, shortNames)
                 images += i
             else:
-                item['name']=utils.fixName(entry)
+                item['name']=utils.fixName(entry, shortNames)
                 item['thumb']=findFirstImage(path+entry+'/')
                 if isYear(item['name']):
                     item['sort']="A:"+str(3000-int(item['name']))
@@ -154,7 +154,7 @@ def getItems(path, ignoreFolders, filt):
         else:
             fType=utils.fileType(entry)
             if fType:
-                item['name']=utils.fixName(utils.removeExtension(entry))
+                item['name']=utils.fixName(utils.removeExtension(entry), shortNames)
                 item['video']='video'==fType
                 images.append(item)
     return subDirs, images
@@ -182,12 +182,12 @@ def getImages(path, ignoreFolders, regex):
                 images.append(item)
     return images
 
-def getJson(path, ignoreFolders, filt):
+def getJson(path, ignoreFolders, filt, shortNames):
     if filt=='today':
         subDirs = []
         images = getImages(path, ignoreFolders, datetime.datetime.today().strftime('^[0-9]{4}-%m-%d_'))
     else:
-        subDirs, images = getItems(path, ignoreFolders, filt)
+        subDirs, images = getItems(path, ignoreFolders, filt, shortNames)
     subDirs=sorted(subDirs, key=lambda k: k['sort'])
     images=sorted(images, key=lambda k: k['sort'])
     response={}
@@ -201,15 +201,17 @@ def getJson(path, ignoreFolders, filt):
 @api.route('/')
 def root():
     filt = request.args.get('filter')
+    shortNames = True if request.args.get('short') == '1' else False
     log.info("Browse <root>")
-    return getJson('', config.ignoreFolders, filt), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return getJson('', config.ignoreFolders, filt, shortNames), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
 @api.route('/<path:path>')
 def folder(path):
     filt = request.args.get('filter')
+    shortNames = True if request.args.get('short') == '1' else False
     log.info("Browse "+path)
     if ('/../' in path):
         abort(403)
         return
-    return getJson(path, None, filt), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return getJson(path, None, filt, shortNames), 200, {'Content-Type': 'application/json; charset=utf-8'}
 
