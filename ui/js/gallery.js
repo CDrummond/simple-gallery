@@ -54,6 +54,7 @@ Vue.component('gallery-view', {
      <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" :title="items[idx].name">
       <img class="image-grid-item-img" :key="items[idx].image" :src="'/api/thumb'+items[idx].image"></img>
       <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
+      <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
       <div class="image-grid-video-overlay" v-else-if="items[idx].isvideo"></div>
      </div>
     </v-card></td>
@@ -214,11 +215,16 @@ Vue.component('gallery-view', {
                         }
                     }
                     if (resp.data.images) {
+                        var isThisDay = path.indexOf('?filter=today')>=0;
+                        var lastYear = undefined;
                         for (var i=0, len=resp.data.images.length; i<len; ++i) {
+                            var year = isThisDay && resp.data.images[i].year && resp.data.images[i].year!=lastYear ? resp.data.images[i].year : undefined;
+                            lastYear = resp.data.images[i].year;
                             this.items.push({sort:resp.data.images[i].sort,
                                              name:resp.data.images[i].name, 
                                              image:fixPath(resp.data.images[i].url),
-                                             isvideo:resp.data.images[i].video});
+                                             isvideo:resp.data.images[i].video,
+                                             year:year});
                         }
                     }
                 }

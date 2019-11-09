@@ -127,6 +127,23 @@ a {
  margin:auto;
 }
 
+.image-grid-year {
+ position:absolute;
+ bottom:8px !important;
+ left:4px !important;
+ width:3em!important;
+ height:1.5em;
+ padding:0px;
+ z-index:2;
+ background:rgba(0, 0, 0, 0.65);
+ color:white;
+ text-align:center;
+ vertical-align:middle;
+ overflow: hidden;
+ margin:auto;
+ opacity:0.75;
+}
+
 .image-grid-video-overlay:before {
  position:absolute;
  top:8px !important;
