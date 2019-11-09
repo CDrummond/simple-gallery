@@ -381,6 +381,10 @@ a.star-icon {
  pointer-events:none;
 }
 
+.blueimp-gallery {
+ background:black!important;
+}
+
 ::cue {
  color: #fff;
  background-color: transparent;
