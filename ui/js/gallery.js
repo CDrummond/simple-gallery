@@ -298,7 +298,7 @@ Vue.component('gallery-view', {
             }
             this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
                 {closeOnSlideClick:false, onslide: function() { view.setCurrentSlideShowItem() },
-                 onclose: function() { view.slideshow.open=false; } });
+                 onclosed: function() { view.slideshow.open=false; } });
             this.slideshow.gallery.slide(index);
             this.slideshow.open=true;
         },
