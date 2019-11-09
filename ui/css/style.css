@@ -342,25 +342,57 @@ a.star-icon {
  font-size:24px !important;
 }
 
-::cue, .lg-toolbar, .lg-sub-html, #lg-counter, #lg-counter-all, button.lg-prev.lg-icon, button.lg-next.lg-icon {
+.hidden {
+ display:none!important;
+}
+
+.slideshow-toolbar {
+ z-index:9999999;
+ background-color:transparent!important;
+ box-shadow:none; width:100vw;
+ position:fixed;
+ top:0px;
+ left:0px;
+}
+
+::cue, .slideshow-text {
  color: #fff;
  background-color: transparent;
  text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
 }
 
+.blueimp-gallery > .prev, .blueimp-gallery > .next {
+ width:36px;
+ height:36px;
+ border:none;
+ background:none;
+ opacity:1;
+}
+
+.blueimp-gallery > .prev {
+ left:0px!important;
+}
+
+.blueimp-gallery > .next {
+ right:0px!important;
+}
+
+.blueimp-gallery > .prev > .v-btn__content, .blueimp-gallery > .next > .v-btn__content {
+ pointer-events:none;
+}
+
 ::cue {
+ color: #fff;
+ background-color: transparent;
+ text-shadow: 0px 1px 2px #000, 0px -1px 2px #000, 1px 0px 2px #000, -1px 0px 2px #000;
  font-size:var(--std-font-size);
  font-weight:var(--std-weight);
  font-family:monospace;
 }
 
-.v-btn__content, .lg-sub-html, #lg-counter, #lg-counter-all {
+.v-btn__content {
  font-size:var(--std-font-size);
  font-weight:var(--std-weight);
  font-family:Roboto,sans-serif;
 }
 
-/* Want actual size button, but not zoom in/out buttons */
-#lg-zoom-in, #lg-zoom-out {
- display:none;
-}

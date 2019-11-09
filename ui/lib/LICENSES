@@ -3,20 +3,15 @@ axios
     URL: https://github.com/axios/axios
     License: MIT
 
+blueimp
+    Version: 2.36.0
+    URL: https://github.com/blueimp/Gallery
+    License: MIT
+
 intersection-observer
     Version: 0.5.0
     URL: https://github.com/w3c/IntersectionObserver
     License: W3C Software and Document License.
-
-LightGallery.js:
-    Version: 1.1.3
-    URL: https://github.com/sachinchoolur/lightgallery.js
-    License: GPL3
-
-VideoJS:
-    Version: 5.20.5
-    URL: https://github.com/videojs/video.js
-    License: Apache License, Version 2.0
 
 vue
     Version: 2.6.10

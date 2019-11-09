@@ -4,7 +4,7 @@
  * Licensed under the MIT license.
  */
 
-const IS_MOBILE  = /Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+const IS_MOBILE = /Android|webOS|iPhone|iPad|BlackBerry|Windows Phone|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
 
 var bus = new Vue();
 

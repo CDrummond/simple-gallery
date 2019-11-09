@@ -27,14 +27,25 @@ const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter
 const INFO_ACTION     = {id:'act:info', title:'Show information', icon:'info'};
 const CLEAR_ACTION    = {id:'act:clear', title:'Clear', icon:'delete'};
 
-const HIDDEN_HTML_VIDEO_ID_PREFIX = 'lg-video-elem-';
 var view;
-
-window.HELP_IMPROVE_VIDEOJS = false;
 
 Vue.component('gallery-view', {
     template: `
 <div>
+ <v-toolbar v-if="slideshow.slides.length>0 && slideshow.open" class="slideshow-toolbar">
+  <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
+  <v-spacer></v-spacer>
+  <v-btn flat icon @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
+  <v-btn flat icon @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
+  <v-btn flat icon v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
+  <v-btn v-if="!IS_MOBILE" flat icon @click.stop="slideshow.gallery.close(); slideshow.open=false; slideshow.playing=false"><v-icon class="slideshow-text">close</v-icon></v-btn>
+ </v-toolbar>
+
+ <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
+  <div class="slides"></div>
+  <v-btn flat icon class="prev" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_left</v-icon></v-btn>
+  <v-btn flat icon class="next" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_right</v-icon></v-btn> 
+ </div>
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
   <RecycleScroller :items="grid.rows" :item-size="GRID_SIZES[grid.size].sz" page-mode key-field="id">
    <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
@@ -69,7 +80,8 @@ Vue.component('gallery-view', {
             items: [],
             fetchingItems: false,
             grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
-            showInfo: false
+            showInfo: false,
+            slideshow: {gallery:undefined, slides:[], title:undefined, starred:false, open:false, playing:false}
         }
     },
     created() {
@@ -263,70 +275,36 @@ Vue.component('gallery-view', {
             }
         },
         destroySlideShow() {
-            if (!this.slideshow || !this.slideshow.created) {
+            if (!this.slideshow) {
                 return;
             }
-            window.lgData[this.slideshow.elem.getAttribute('lg-uid')].destroy(true);
-            for (var i=0; i<this.slideshow.numVideos; ++i) {
-                document.getElementById(HIDDEN_HTML_VIDEO_ID_PREFIX+i).remove();
+            if (this.slideshow.gallery) {
+                this.slideshow.gallery.close();
+                this.slideshow.gallery = undefined;
             }
-            this.slideshow.created = false;
-            this.slideshow.numVideos = 0;
+            this.slideshow.slides = [];
         },
         createSlideShow(item, index, event) {
-            if (!this.slideshow) {
-                this.slideshow = {elem:undefined, star:undefined, created:false, numVideos:0, currentIndex:0};
-            }
-            if (undefined==this.slideshow.elem) {
-                this.slideshow.elem=document.getElementById('lightgallery');
-                this.slideshow.created=false;
-
-                if (undefined==this.slideshow.star) {
-                    this.slideshow.star = document.createElement('a');
-                    this.slideshow.star.setAttribute('class', 'lg-icon star-icon');
-                    this.slideshow.star.setAttribute('href', 'javascript:view.toggleStarred()');
-                }
-
-                this.slideshow.elem.addEventListener('onAfterOpen', function (event) {
-                    var toolbar = document.getElementsByClassName('lg-toolbar')[0];
-                    if (!toolbar.querySelector('#star-icon')) {
-                        toolbar.appendChild(view.slideshow.star);
-                    }
-                });
-
-                this.slideshow.elem.addEventListener('onAfterSlide', function (event) {
-                    view.slideshow.currentIndex = event.detail.index;
-                    view.setStaredState();
-                });
-            }
-
-            if (this.slideshow.created) {
-                window.lightGallery(this.slideshow.elem);
-                window.lgData[this.slideshow.elem.getAttribute('lg-uid')].index=index;
-            } else {
-                var items=[];
+            if (this.slideshow.slides.length<1) {
                 for (var i=0, len=this.items.length; i<len; ++i) {
                     var item=this.items[i];
                     if (item.isvideo) {
-                        var html='<div style="display:none;" id="'+HIDDEN_HTML_VIDEO_ID_PREFIX+this.slideshow.numVideos+'">'+
-                                 '<video class="lg-video-object lg-html5 video-js vjs-default-skin" controls preload="none">'+
-                                 '<source src="'+this.serverRoot+this.items[i].image+'" type="video/mp4"></source>'+
-                                 '<track kind="subtitles" src="'+this.serverRoot+this.items[i].image.split('.').slice(0, -1).join('.')+'.vtt" label="Subtitles" default></track>'+
-                                 '</video></div>';
-                        this.slideshow.elem.insertAdjacentHTML('beforeend', html);
-                        items.push({poster:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
-                                    html:'#'+HIDDEN_HTML_VIDEO_ID_PREFIX+this.slideshow.numVideos,
-                                    downloadUrl:this.serverRoot+this.items[i].image});
-                        this.slideshow.numVideos++;
+                        this.slideshow.slides.push({href:this.serverRoot+this.items[i].image, poster:'/api/scaled'+this.items[i].image,
+                                                    title:this.items[i].name, type:'video/mp4'});
                     } else {
-                        items.push({src:'/api/scaled'+this.items[i].image, subHtml:this.items[i].name,
-                                    downloadUrl:this.serverRoot+this.items[i].image});
+                        this.slideshow.slides.push({href:'/api/scaled'+this.items[i].image, title:this.items[i].name, type:'image/jpeg'});
                     }
                 }
-                window.lightGallery(this.slideshow.elem, { mode: 'lg-slide',  download: true, thumbnail: false, dynamic: true, dynamicEl: items, videojs: true, controls: !IS_MOBILE, index:index });
-
-                this.slideshow.created=true;
             }
+            this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
+                {closeOnSlideClick:false, onslide: function() { view.setCurrentSlideShowItem() },
+                 onclose: function() { view.slideshow.open=false; } });
+            this.slideshow.gallery.slide(index);
+            this.slideshow.open=true;
+        },
+        setCurrentSlideShowItem(index) {
+            this.slideshow.title = this.items[this.slideshow.gallery.index].name;
+            this.slideshow.starred = this.starred.has(this.items[this.slideshow.gallery.index].image);
         },
         showStarredItems() {
             this.name='Starred';
@@ -346,26 +324,32 @@ Vue.component('gallery-view', {
             });
         },
         toggleStarred() {
-            var url = this.items[this.slideshow.currentIndex].image;
+            var url = this.items[this.slideshow.gallery.index].image;
             if (this.starred.has(url)) {
                 this.starred.delete(url);
+                this.slideshow.starred = false;
             } else {
                 this.starred.set(url, view.items[this.slideshow.currentIndex]);
+                this.slideshow.starred = true;
             }
             var starred = [];
             for (var [key, value] of this.starred) {
                 starred.push(value);
             }
             window.localStorage.setItem('starred', JSON.stringify(starred));
-            this.setStaredState();
         },
-        setStaredState() {
-            var url = this.items[this.slideshow.currentIndex].image;
-            if (this.starred.has(url)) {
-                this.slideshow.star.innerHTML = '<b>&#x2605;</b>';
+        playPause() {
+            if (this.slideshow.playing) {
+                this.slideshow.gallery.pause();
             } else {
-                this.slideshow.star.innerHTML = '<b>&#9734;</b>';
+                this.slideshow.gallery.play();
             }
+            this.slideshow.playing=!this.slideshow.playing;
+        },
+        downloadItem() {
+            var url = this.serverRoot + this.items[this.slideshow.gallery.index].image;
+            var name = url.substring(url.lastIndexOf('/')+1);
+            download(url, name);
         },
         layoutGrid() {
             const ITEM_BORDER = 8;
