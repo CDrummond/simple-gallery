@@ -126,9 +126,13 @@ Vue.component('gallery-view', {
         });
         var starred = window.localStorage.getItem('starred');
         if (starred) {
-            starred = JSON.parse(starred);
-            for (var i=0, len=starred.length; i<len; ++i) {
-                this.starred.set(starred[i].image, starred[i]);
+            try {
+                starred = JSON.parse(starred);
+                for (var i=0, len=starred.length; i<len; ++i) {
+                    this.starred.set(starred[i].image, starred[i]);
+                }
+            } catch(e) {
+                window.localStorage.removeItem('starred');
             }
         }
     },
@@ -355,7 +359,7 @@ Vue.component('gallery-view', {
                 this.starred.delete(url);
                 this.slideshow.starred = false;
             } else {
-                this.starred.set(url, view.items[this.slideshow.currentIndex]);
+                this.starred.set(url, this.items[this.slideshow.gallery.index]);
                 this.slideshow.starred = true;
             }
             var starred = [];
