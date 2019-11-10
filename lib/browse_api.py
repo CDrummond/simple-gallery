@@ -159,7 +159,7 @@ def getItems(path, ignoreFolders, filt, shortNames):
                 images.append(item)
     return subDirs, images
 
-def getImages(path, ignoreFolders, regex):
+def getImages(path, ignoreFolders, regex, shortNames):
     images=[]
     if not path.endswith('/'):
         path+='/'
@@ -168,7 +168,7 @@ def getImages(path, ignoreFolders, regex):
             continue
         log.info("Entry "+entry)
         if os.path.isdir(config.sourceFolder+path+entry):
-            images += getImages(path+entry, ignoreFolders, regex)
+            images += getImages(path+entry, ignoreFolders, regex, shortNames)
         elif re.findall(regex, entry):
             fType=utils.fileType(entry)
             if fType:
@@ -176,7 +176,7 @@ def getImages(path, ignoreFolders, regex):
                 item={}
                 item['url'] = resolveLink(path, entry)
                 item['sort'] = entry
-                item['name']=utils.fixName(fName)
+                item['name']=utils.fixName(fName, shortNames)
                 item['video']='video'==fType
                 item['year']=utils.yearFromName(fName)
                 images.append(item)
@@ -185,7 +185,7 @@ def getImages(path, ignoreFolders, regex):
 def getJson(path, ignoreFolders, filt, shortNames):
     if filt=='today':
         subDirs = []
-        images = getImages(path, ignoreFolders, datetime.datetime.today().strftime('^[0-9]{4}-%m-%d_'))
+        images = getImages(path, ignoreFolders, datetime.datetime.today().strftime('^[0-9]{4}-%m-%d_'), shortNames)
     else:
         subDirs, images = getItems(path, ignoreFolders, filt, shortNames)
     subDirs=sorted(subDirs, key=lambda k: k['sort'])
