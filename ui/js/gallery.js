@@ -268,6 +268,7 @@ Vue.component('gallery-view', {
             if (numVideos>0) {
                 subtitle+=(subtitle.length>1 ? ', ' : '')+(numVideos==1 ? '1 Video' : (numVideos + ' Videos'));
             }
+            this.haveVideos = numVideos>0;
             return subtitle;
         },
         click(item, index, event) {
@@ -303,12 +304,31 @@ Vue.component('gallery-view', {
                 }
             }
             this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
-                {closeOnSlideClick:false, onslide: function() { view.setCurrentSlideShowItem() },
+                {closeOnSlideClick:false,
+                 onopened: function() { view.addVideoSubtitles() },
+                 onslide: function() { view.setCurrentSlideShowItem() },
                  onclosed: function() { view.slideshow.open=false; } });
             this.slideshow.gallery.slide(index);
             this.slideshow.open=true;
         },
-        setCurrentSlideShowItem(index) {
+        addVideoSubtitles() {
+            if (!this.haveVideos) {
+                return;
+            }
+            var list = document.getElementsByTagName("video");
+            if (undefined==list) {
+                return;
+            }
+            for (var i=0, len=list.length; i<len; ++i) {
+                var sub = document.createElement('track');
+                sub.setAttribute('kind', 'subtitles');
+                sub.setAttribute('src', list[i].src.split('.').slice(0, -1).join('.')+'.vtt');
+                sub.setAttribute('label', 'Subtitles');
+                sub.setAttribute('default', '');
+                list[i].appendChild(sub);
+            }
+        },
+        setCurrentSlideShowItem() {
             this.slideshow.title = this.items[this.slideshow.gallery.index].name;
             this.slideshow.starred = this.starred.has(this.items[this.slideshow.gallery.index].image);
         },
