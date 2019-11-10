@@ -408,12 +408,13 @@ Vue.component('gallery-view', {
             if (numColumns != this.grid.numColumns) { // Need to re-layout...
                 changed = true;
                 this.grid.rows=[];
+                var prefix = this.history.length+".";
                 for (var i=0; i<this.items.length; i+=numColumns) {
                     var indexes=[]
                     for (var j=0; j<numColumns; ++j) {
                         indexes.push(i+j);
                     }
-                    this.grid.rows.push({id:'row.'+i+'.'+numColumns, indexes:indexes});
+                    this.grid.rows.push({id:prefix+i, indexes:indexes});
                 }
                 this.grid.numColumns = numColumns;
             }
