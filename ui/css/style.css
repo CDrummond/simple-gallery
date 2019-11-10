@@ -413,7 +413,6 @@ a.star-icon {
  font-size:var(--std-font-size);
  font-weight:var(--std-weight);
  font-family:monospace;
- line-height:100px; /* Hack to move subtitles down a bit */
 }
 
 .v-btn__content {
