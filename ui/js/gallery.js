@@ -303,6 +303,7 @@ Vue.component('gallery-view', {
                 if (this.slideshow.open) {
                     this.slideshow.gallery.close();
                     this.slideshow.open=false;
+                    this.slideshow.playing=false;
                 }
                 this.slideshow.gallery = undefined;
             }
@@ -324,9 +325,10 @@ Vue.component('gallery-view', {
                 {closeOnSlideClick:false,
                  onopened: function() { view.addVideoSubtitles() },
                  onslide: function() { view.setCurrentSlideShowItem() },
-                 onclosed: function() { view.slideshow.open=false; } });
+                 onclosed: function() { view.slideshow.open=false; view.slideshow.playing=false; } });
             this.slideshow.gallery.slide(index);
             this.slideshow.open=true;
+            this.slideshow.playing=false;
         },
         addVideoSubtitles() {
             if (!this.haveVideos) {
