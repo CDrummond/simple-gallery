@@ -18,6 +18,11 @@ vue
     URL: https://github.com/vuejs/vue
     License: MIT
 
+vue-lazyload
+    Version: 1.2.6
+    URL: https://github.com/hilongjw/vue-lazyload
+    License: MIT
+
 vue-virtual-scroller:
     Version: 1.0.0-rc2
     URL: https://github.com/Akryum/vue-virtual-scroller

@@ -4,6 +4,8 @@
   Licensed under the MIT license.
 */
 
+Vue.use(VueLazyload);
+
 var app = new Vue({
     el: '#app',
     data() {

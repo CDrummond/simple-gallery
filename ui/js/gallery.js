@@ -32,22 +32,21 @@ var view;
 Vue.component('gallery-view', {
     template: `
 <div>
- <v-toolbar v-if="slideshow.slides.length>0 && slideshow.open" class="slideshow-toolbar">
-  <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
-  <v-spacer></v-spacer>
-  <v-btn flat icon @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
-  <v-btn flat icon @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
-  <v-btn flat icon v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
-  <v-btn v-if="!IS_MOBILE" flat icon @click.stop="slideshow.gallery.close(); slideshow.open=false; slideshow.playing=false"><v-icon class="slideshow-text">close</v-icon></v-btn>
- </v-toolbar>
-
  <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
+  <v-toolbar v-if="slideshow.slides.length>0 && slideshow.open" class="slideshow-toolbar">
+   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
+   <v-spacer></v-spacer>
+   <v-btn flat icon @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
+   <v-btn flat icon @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
+   <v-btn flat icon v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
+   <v-btn v-if="!IS_MOBILE" flat icon @click.stop="slideshow.gallery.close(); slideshow.open=false; slideshow.playing=false"><v-icon class="slideshow-text">close</v-icon></v-btn>
+  </v-toolbar>
   <div class="slides"></div>
   <v-btn flat icon class="prev" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_left</v-icon></v-btn>
   <v-btn flat icon class="next" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_right</v-icon></v-btn> 
  </div>
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
-  <RecycleScroller :items="grid.rows" :item-size="GRID_SIZES[grid.size].sz" page-mode key-field="id">
+  <RecycleScroller :items="grid.rows" :item-size="GRID_SIZES[grid.size].sz" page-mode key-field="id" v-if="items.length>150">
    <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
     <td align="center" style="vertical-align: top" v-for="(idx, cidx) in item.indexes"><v-card flat align="left" class="image-grid-item">
      <div v-if="idx>=items.length" class="image-grid-item"></div>
@@ -60,6 +59,17 @@ Vue.component('gallery-view', {
     </v-card></td>
    </table>
   </RecycleScroller>
+  <table v-else v-for="(row, ridx) in grid.rows" :key="row.id" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
+   <td align="center" style="vertical-align: top" v-for="(idx, cidx) in row.indexes"><v-card flat align="left" class="image-grid-item">
+    <div v-if="idx>=items.length" class="image-grid-item"></div>
+    <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" :title="items[idx].name">
+     <img class="image-grid-item-img" :key="items[idx].image" v-lazy="'/api/thumb'+items[idx].image"></img>
+     <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
+     <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
+     <div class="image-grid-video-overlay" v-else-if="items[idx].isvideo"></div>
+    </div>
+   </v-card></td>
+  </table>
  </div>
  <v-progress-circular class="load-progress" v-if="fetchingItems" color="primary" size=72 width=6 indeterminate></v-progress-circular>
  <v-dialog v-model="showInfo" v-if="showInfo" persistent scrollable width="600">
@@ -290,7 +300,10 @@ Vue.component('gallery-view', {
                 return;
             }
             if (this.slideshow.gallery) {
-                this.slideshow.gallery.close();
+                if (this.slideshow.open) {
+                    this.slideshow.gallery.close();
+                    this.slideshow.open=false;
+                }
                 this.slideshow.gallery = undefined;
             }
             this.slideshow.slides = [];
