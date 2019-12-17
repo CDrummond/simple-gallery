@@ -376,6 +376,10 @@ a.star-icon {
  left:0px;
 }
 
+.disabled {
+ opacity:0.25;
+}
+
 ::cue, .slideshow-text {
  color: #fff;
  background-color: transparent;
@@ -404,6 +408,10 @@ a.star-icon {
 
 .blueimp-gallery {
  background:black!important;
+}
+
+.iv-fullscreen-close {
+ display:none!important;
 }
 
 ::cue {

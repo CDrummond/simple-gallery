@@ -32,18 +32,20 @@ var view;
 Vue.component('gallery-view', {
     template: `
 <div>
+ <v-toolbar v-if="slideshow.slides.length>0 && (slideshow.open || slideshow.zoom)" class="slideshow-toolbar">
+  <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
+  <v-spacer></v-spacer>
+  <v-btn flat icon v-bind:class="{'disabled':slideshow.isvideo}" @click.stop="toggleZoom()"><v-icon class="slideshow-text">{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-btn>
+  <v-btn flat icon v-bind:class="{'disabled':slideshow.playing}" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
+  <v-btn flat icon v-bind:class="{'disabled':slideshow.playing}" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
+  <v-btn flat icon v-bind:class="{'disabled':slideshow.zoom}" v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
+  <v-btn v-if="!IS_MOBILE" flat icon @click.stop="closeSlideShow(); closeViewer();"><v-icon class="slideshow-text">close</v-icon></v-btn>
+ </v-toolbar>v
+
  <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
-  <v-toolbar v-if="slideshow.slides.length>0 && slideshow.open" class="slideshow-toolbar">
-   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
-   <v-spacer></v-spacer>
-   <v-btn flat icon @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
-   <v-btn flat icon @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
-   <v-btn flat icon v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
-   <v-btn v-if="!IS_MOBILE" flat icon @click.stop="slideshow.gallery.close(); slideshow.open=false; slideshow.playing=false"><v-icon class="slideshow-text">close</v-icon></v-btn>
-  </v-toolbar>
   <div class="slides"></div>
-  <v-btn flat icon class="prev" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_left</v-icon></v-btn>
-  <v-btn flat icon class="next" v-if="!IS_MOBILE"><v-icon class="slideshow-text">keyboard_arrow_right</v-icon></v-btn> 
+  <v-btn flat icon class="prev" v-if="!IS_MOBILE && !slideshow.zoom"><v-icon class="slideshow-text">keyboard_arrow_left</v-icon></v-btn>
+  <v-btn flat icon class="next" v-if="!IS_MOBILE && !slideshow.zoom"><v-icon class="slideshow-text">keyboard_arrow_right</v-icon></v-btn> 
  </div>
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
   <RecycleScroller :items="grid.rows" :item-size="GRID_SIZES[grid.size].sz" page-mode key-field="id" v-if="items.length>150">
@@ -92,7 +94,7 @@ Vue.component('gallery-view', {
             fetchingItems: false,
             grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
             showInfo: false,
-            slideshow: {gallery:undefined, slides:[], title:undefined, starred:false, open:false, playing:false}
+            slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false}
         }
     },
     created() {
@@ -292,7 +294,22 @@ Vue.component('gallery-view', {
                 }
                 this.fetchItems(item.path, item.name);
             } else {
-                this.createSlideShow(item, index, event);
+                this.createSlideShow(index);
+            }
+        },
+        closeSlideShow() {
+            if (this.slideshow.open) {
+                this.slideshow.gallery.close();
+                this.slideshow.open=false;
+                this.slideshow.playing=false
+            }
+        },
+        closeViewer() {
+            if (this.slideshow.zoom) {
+                this.slideshow.zoom=false;
+                if (undefined!=this.slideshow.viewer) {
+                    this.slideshow.viewer.hide();
+                }
             }
         },
         destroySlideShow() {
@@ -300,16 +317,13 @@ Vue.component('gallery-view', {
                 return;
             }
             if (this.slideshow.gallery) {
-                if (this.slideshow.open) {
-                    this.slideshow.gallery.close();
-                    this.slideshow.open=false;
-                    this.slideshow.playing=false;
-                }
+                this.closeSlideShow();
                 this.slideshow.gallery = undefined;
             }
+            this.closeViewer();
             this.slideshow.slides = [];
         },
-        createSlideShow(item, index, event) {
+        createSlideShow(index) {
             if (this.slideshow.slides.length<1) {
                 for (var i=0, len=this.items.length; i<len; ++i) {
                     var item=this.items[i];
@@ -325,10 +339,11 @@ Vue.component('gallery-view', {
                 {closeOnSlideClick:false,
                  onopened: function() { view.addVideoSubtitles() },
                  onslide: function() { view.setCurrentSlideShowItem() },
-                 onclosed: function() { view.slideshow.open=false; view.slideshow.playing=false; } });
+                 onclosed: function() { view.closeSlideShow();} });
             this.slideshow.gallery.slide(index);
             this.slideshow.open=true;
             this.slideshow.playing=false;
+            this.slideshow.zoom=false;
         },
         addVideoSubtitles() {
             if (!this.haveVideos) {
@@ -350,6 +365,7 @@ Vue.component('gallery-view', {
         setCurrentSlideShowItem() {
             this.slideshow.title = this.items[this.slideshow.gallery.index].name;
             this.slideshow.starred = this.starred.has(this.items[this.slideshow.gallery.index].image);
+            this.slideshow.isvideo = this.items[this.slideshow.gallery.index].isvideo;
         },
         showStarredItems() {
             this.name='Starred';
@@ -368,7 +384,32 @@ Vue.component('gallery-view', {
                 setScrollTop(this.imageGridElement, 0);
             });
         },
+        toggleZoom() {
+            if (this.items[this.slideshow.gallery.index].isvideo) {
+                return;
+            }
+            if (this.slideshow.playing) {
+                this.playPause();
+            }
+            this.slideshow.zoom=!this.slideshow.zoom;
+            if (this.slideshow.zoom) {
+                this.closeSlideShow();
+                if (undefined==this.slideshow.viewer) {
+                    this.slideshow.viewer = new ImageViewer.FullScreenViewer({snapView:true}); 
+                }
+                var img = this.items[this.slideshow.gallery.index].image;
+                this.slideshow.viewer.show('/api/scaled'+img, this.serverRoot+img);
+            } else if (undefined!=this.slideshow.viewer) {
+                this.$nextTick(function () {
+                    this.createSlideShow(this.slideshow.gallery.index);
+                    this.slideshow.viewer.hide();
+                });
+            }
+        },
         toggleStarred() {
+            if (this.slideshow.playing) {
+                return;
+            }
             var url = this.items[this.slideshow.gallery.index].image;
             if (this.starred.has(url)) {
                 this.starred.delete(url);
@@ -384,6 +425,9 @@ Vue.component('gallery-view', {
             window.localStorage.setItem('starred', JSON.stringify(starred));
         },
         playPause() {
+            if (this.slideshow.zoom) {
+                return;
+            }
             if (this.slideshow.playing) {
                 this.slideshow.gallery.pause();
             } else {
@@ -392,6 +436,9 @@ Vue.component('gallery-view', {
             this.slideshow.playing=!this.slideshow.playing;
         },
         downloadItem() {
+            if (this.slideshow.playing) {
+                return;
+            }
             var url = this.serverRoot + this.items[this.slideshow.gallery.index].image;
             var name = url.substring(url.lastIndexOf('/')+1);
             download(url, name);

@@ -13,6 +13,12 @@ intersection-observer
     URL: https://github.com/w3c/IntersectionObserver
     License: W3C Software and Document License.
 
+
+iv-viewer:
+    Version: 2.0.1
+    URL: https://github.com/s-yadav/iv-viewer
+    License: MIT
+
 vue
     Version: 2.6.10
     URL: https://github.com/vuejs/vue
