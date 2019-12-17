@@ -35,11 +35,28 @@ Vue.component('gallery-view', {
  <v-toolbar v-if="slideshow.slides.length>0 && (slideshow.open || slideshow.zoom)" class="slideshow-toolbar">
   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
   <v-spacer></v-spacer>
-  <v-btn flat icon v-bind:class="{'disabled':slideshow.isvideo}" @click.stop="toggleZoom()"><v-icon class="slideshow-text">{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-btn>
-  <v-btn flat icon v-bind:class="{'disabled':slideshow.playing}" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
-  <v-btn flat icon v-bind:class="{'disabled':slideshow.playing}" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
+  <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.isvideo}" @click.stop="toggleZoom()"><v-icon class="slideshow-text">{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-btn>
+  <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
+  <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
   <v-btn flat icon v-bind:class="{'disabled':slideshow.zoom}" v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
   <v-btn v-if="!IS_MOBILE" flat icon @click.stop="closeSlideShow(); closeViewer();"><v-icon class="slideshow-text">close</v-icon></v-btn>
+  <v-menu v-if="!wide" bottom>
+   <v-btn flat icon slot="activator"><v-icon class="slideshow-text">more_vert</v-icon></v-btn>
+   <v-list>
+    <v-list-tile v-bind:class="{'disabled':slideshow.isvideo}" @click="toggleZoom()">
+     <v-list-tile-avatar><v-icon>{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-list-tile-avatar>
+     <v-list-tile-content>{{slideshow.zoom ? "Return to slideshow" : "Allow zooming"}}</v-list-tile-content>
+    </v-list-tile>
+    <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="toggleStarred()">
+     <v-list-tile-avatar><v-icon>{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-list-tile-avatar>
+     <v-list-tile-content>{{slideshow.starred ? "Remove star" : "Mark with star"}}</v-list-tile-content>
+    </v-list-tile>
+    <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="downloadItem()">
+     <v-list-tile-avatar><v-icon>cloud_download</v-icon></v-list-tile-avatar>
+     <v-list-tile-content>Download</v-list-tile-content>
+    </v-list-tile>
+   </v-list>
+  </v-menu>
  </v-toolbar>v
 
  <div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls">
@@ -147,6 +164,14 @@ Vue.component('gallery-view', {
                 window.localStorage.removeItem('starred');
             }
         }
+
+        this.wide = window.innerWidth>=500;
+        window.addEventListener('resize', () => {
+            var wide = window.innerWidth>=500;
+            if (wide!=view.wide) {
+                view.wide=wide;
+            }
+        }, false);
     },
     mounted() {
         this.imageGridElement = document.getElementById('imageGrid');
