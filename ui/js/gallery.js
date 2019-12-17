@@ -39,7 +39,7 @@ Vue.component('gallery-view', {
   <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
   <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
   <v-btn flat icon v-bind:class="{'disabled':slideshow.zoom}" v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
-  <v-btn v-if="!IS_MOBILE" flat icon @click.stop="closeSlideShow(); closeViewer();"><v-icon class="slideshow-text">close</v-icon></v-btn>
+  <v-btn v-if="wide" flat icon @click.stop="closeSlideShow(); closeViewer();"><v-icon class="slideshow-text">close</v-icon></v-btn>
   <v-menu v-if="!wide" bottom>
    <v-btn flat icon slot="activator"><v-icon class="slideshow-text">more_vert</v-icon></v-btn>
    <v-list>
@@ -54,6 +54,11 @@ Vue.component('gallery-view', {
     <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="downloadItem()">
      <v-list-tile-avatar><v-icon>cloud_download</v-icon></v-list-tile-avatar>
      <v-list-tile-content>Download</v-list-tile-content>
+    </v-list-tile>
+    <v-divider></v-divider>
+    <v-list-tile @click="closeSlideShow()">
+     <v-list-tile-avatar><v-icon>close</v-icon></v-list-tile-avatar>
+     <v-list-tile-content>Close</v-list-tile-content>
     </v-list-tile>
    </v-list>
   </v-menu>
