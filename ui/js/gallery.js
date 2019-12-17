@@ -45,7 +45,7 @@ Vue.component('gallery-view', {
    <v-list>
     <v-list-tile v-bind:class="{'disabled':slideshow.isvideo}" @click="toggleZoom()">
      <v-list-tile-avatar><v-icon>{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-list-tile-avatar>
-     <v-list-tile-content>{{slideshow.zoom ? "Return to slideshow" : "Allow zooming"}}</v-list-tile-content>
+     <v-list-tile-content>{{slideshow.zoom ? "Restore" : "Allow zooming"}}</v-list-tile-content>
     </v-list-tile>
     <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="toggleStarred()">
      <v-list-tile-avatar><v-icon>{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-list-tile-avatar>
