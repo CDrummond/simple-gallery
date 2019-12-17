@@ -56,7 +56,7 @@ Vue.component('gallery-view', {
      <v-list-tile-content>Download</v-list-tile-content>
     </v-list-tile>
     <v-divider></v-divider>
-    <v-list-tile @click="closeSlideShow()">
+    <v-list-tile @click="closeSlideShow(); closeViewer();"">
      <v-list-tile-avatar><v-icon>close</v-icon></v-list-tile-avatar>
      <v-list-tile-content>Close</v-list-tile-content>
     </v-list-tile>
@@ -331,15 +331,13 @@ Vue.component('gallery-view', {
             if (this.slideshow.open) {
                 this.slideshow.gallery.close();
                 this.slideshow.open=false;
-                this.slideshow.playing=false
+                this.slideshow.playing=false;
             }
         },
         closeViewer() {
-            if (this.slideshow.zoom) {
-                this.slideshow.zoom=false;
-                if (undefined!=this.slideshow.viewer) {
-                    this.slideshow.viewer.hide();
-                }
+            this.slideshow.zoom=false;
+            if (undefined!=this.slideshow.viewer) {
+                this.slideshow.viewer.hide();
             }
         },
         destroySlideShow() {
@@ -367,11 +365,10 @@ Vue.component('gallery-view', {
             }
             this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
                 {closeOnSlideClick:false,
-                 onopened: function() { view.addVideoSubtitles() },
+                 onopened: function() { view.slideshow.open=true; view.addVideoSubtitles() },
                  onslide: function() { view.setCurrentSlideShowItem() },
-                 onclosed: function() { view.closeSlideShow();} });
+                 onclosed: function() { view.slideshow.open=false; view.slideshow.playing=false } });
             this.slideshow.gallery.slide(index);
-            this.slideshow.open=true;
             this.slideshow.playing=false;
             this.slideshow.zoom=false;
         },
