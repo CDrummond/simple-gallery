@@ -369,7 +369,7 @@ Vue.component('gallery-view', {
             this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
                 {closeOnSlideClick:false,
                  onopened: function() { view.slideshow.open=true; view.addVideoSubtitles() },
-                 onslide: function() { view.setCurrentSlideShowItem(); view.slideStart = (new Date()).getTime(); view.slideshow.playpc = 0; },
+                 onslide: function() { view.setCurrentSlideShowItem() },
                  onclosed: function() { view.slideshow.open=false; view.slideshow.playing=false } });
             this.slideshow.gallery.slide(index);
             this.slideshow.playing=false;
@@ -459,10 +459,8 @@ Vue.component('gallery-view', {
                 return;
             }
             if (this.slideshow.playing) {
-                this.slideshow.gallery.pause();
                 this.stopSlideTimer();
             } else {
-                this.slideshow.gallery.play();
                 this.starSlideTimer();
             }
             this.slideshow.playing=!this.slideshow.playing;
@@ -483,11 +481,15 @@ Vue.component('gallery-view', {
             this.slideshow.playpc = 0;
         },
         starSlideTimer() {
-            this.slideStart = (new Date()).getTime();
             this.slideshow.playpc = 0;
             this.slideTimer = setInterval(function () {
-                var now = (new Date()).getTime();
-                this.slideshow.playpc = (now-this.slideStart)/50.0;
+                this.slideshow.playpc += 2;
+                if (this.slideshow.playpc>100) {
+                    this.slideshow.playpc = 0;
+                    var index = this.slideshow.gallery.index + 1;
+                    this.slideshow.gallery.slide(index >=this.items.length ? 0 : index);
+                    
+                }
             }.bind(this), 100);
         },
         layoutGrid() {
