@@ -43,6 +43,7 @@ def saveInfo(directory, thumb):
     # TODO: In future might save more info to JSON file, so need to read prev contents
     if utils.createDir(config.cacheFolder+directory):
         infoFile = config.cacheFolder+directory+"info.json"
+        log.info("%s -> %s" % (infoFile, thumb))
         with open(infoFile, 'w') as f:
             json.dump({'thumb':thumb}, f)
             

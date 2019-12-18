@@ -6,21 +6,34 @@
 
 import json
 import os
+from . import browse_api
 from . import config
 from . import image
 from . import utils
 from . import log
-from flask import Blueprint, abort, send_file
+from flask import Blueprint, abort, request, send_file
 
 api = Blueprint(__name__, __name__)
 
-@api.route('/<path:path>')
+@api.route('/<path:path>', methods = ['GET', 'POST'])
 def root(path):
     log.info("Thumb "+path)
+
     if ('/../' in path):
         log.error("Invalid path "+path)
         abort(403)
         return
+
+    if request.method == 'POST':
+        data = request.get_json(silent=True)
+        log.info("Thumb POST %s" % str(data))
+        if 'thumb' not in data:
+            log.error("Invalid data ")
+            abort(403)
+            return
+        browse_api.saveInfo(path+"/", data['thumb'])
+        return json.dumps({'ok':True}, separators=(',',':')), 200, {'Content-Type': 'application/json; charset=utf-8'}
+
     fType=utils.fileType(path)
     if not ('image'==fType or'video'==fType):
         log.error("Invalid file type on path "+path)

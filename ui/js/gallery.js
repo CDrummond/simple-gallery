@@ -34,6 +34,14 @@ var view;
 Vue.component('gallery-view', {
     template: `
 <div>
+ <v-menu v-model="menu.show" :position-x="menu.x" :position-y="menu.y" absolute offset-y>
+  <v-list>
+   <v-list-tile @click="setThumbnail(menu.item, menu.index)">
+    <v-list-tile-avatar :tile="true"><v-icon>photo</v-icon></v-list-tile-avatar>
+    <v-list-tile-title>Use as thumbnail</v-list-tile-title>
+   </v-list-tile>
+  </v-list>
+ </v-menu>
  <v-progress-linear height="3" background-color="transparent" v-if="slideshow.slides.length>0 && slideshow.open && !slideshow.zoom && slideshow.playing" class="np-slider np-slider-desktop" class="slideshow-progress" :value="slideshow.playpc"></v-progress-linear>
  <v-toolbar v-if="slideshow.slides.length>0 && (slideshow.open || slideshow.zoom)" class="slideshow-toolbar">
   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
@@ -77,7 +85,7 @@ Vue.component('gallery-view', {
    <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
     <td align="center" style="vertical-align: top" v-for="(idx, cidx) in item.indexes"><v-card flat align="left" class="image-grid-item">
      <div v-if="idx>=items.length" class="image-grid-item"></div>
-     <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" :title="items[idx].name">
+     <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" @contextmenu="context(items[idx], idx, $event)" :title="items[idx].name">
       <img class="image-grid-item-img" :key="items[idx].image" :src="'/api/thumb'+items[idx].image"></img>
       <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
       <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
@@ -89,7 +97,7 @@ Vue.component('gallery-view', {
   <table v-else v-for="(row, ridx) in grid.rows" :key="row.id" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
    <td align="center" style="vertical-align: top" v-for="(idx, cidx) in row.indexes"><v-card flat align="left" class="image-grid-item">
     <div v-if="idx>=items.length" class="image-grid-item"></div>
-    <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" :title="items[idx].name">
+    <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" @contextmenu="context(items[idx], idx, $event)" :title="items[idx].name">
      <img class="image-grid-item-img" :key="items[idx].image" v-lazy="'/api/thumb'+items[idx].image"></img>
      <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
      <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
@@ -119,7 +127,8 @@ Vue.component('gallery-view', {
             fetchingItems: false,
             grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
             showInfo: false,
-            slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false, playpc:0}
+            slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false, playpc:0},
+            menu: { show: false, x:0, y:0 }
         }
     },
     created() {
@@ -207,16 +216,19 @@ Vue.component('gallery-view', {
                 while (this.history.length>level) {
                     prev = this.history.pop();
                 }
-
-                this.items = prev.items;
-                this.name = prev.name;
-                this.path = prev.path;
-                this.updateToolbar();
-                this.destroySlideShow();
-                this.layoutGrid();
-                this.$nextTick(function () {
-                    setScrollTop(this.imageGridElement, prev.pos);
-                });
+                if (prev.refresh) {
+                    this.fetchItems(prev.path, prev.name);
+                } else {
+                    this.items = prev.items;
+                    this.name = prev.name;
+                    this.path = prev.path;
+                    this.updateToolbar();
+                    this.destroySlideShow();
+                    this.layoutGrid();
+                    this.$nextTick(function () {
+                        setScrollTop(this.imageGridElement, prev.pos);
+                    });
+                }
             }
         },
         updateToolbar() {
@@ -326,6 +338,19 @@ Vue.component('gallery-view', {
             } else {
                 this.createSlideShow(index);
             }
+        },
+        context(item, index, event) {
+            if (this.path.length>1 && this.path!=STARRED_ACTION.id) {
+                this.menu={show:true, item:item, x:event.clientX, y:event.clientY, index:index};
+            }
+            event.preventDefault();
+        },
+        setThumbnail(item, index) {
+            var data = {thumb:item.image.substring(this.path.length+(this.path.endsWith('/') ? 0 : 1))};
+            axios.post('/api/thumb'+fixPath(this.path), data).then((resp) => {
+                bus.$emit('showMessage', 'Thumbnail set');
+                this.history[this.history.length-1].refresh=true;
+            });
         },
         closeSlideShow() {
             if (this.slideshow.open) {
