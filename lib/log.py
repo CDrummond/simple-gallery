@@ -9,9 +9,9 @@ enabled=True
 def error(str):
     #global enabled
     #if enabled:
-    print "ERROR: "+str
+    print("ERROR: %s" % str)
 
 def info(str):
     global enabled
     if enabled:
-        print "INFO: "+str
+        print("INFO: %s" % str)

@@ -84,7 +84,7 @@ def fileType(fileName):
 def createDir(directory):
     if not os.path.exists(directory):
         log.info("Create "+directory)
-        os.makedirs(directory, 0755)
+        os.makedirs(directory, 0o755)
         if not os.path.exists(directory):
             return False
     return True
@@ -106,7 +106,7 @@ def videoInfo(vid):
             if rotate == 90 or rotate == 270:
                 portrait = True
         return duration, portrait
-    except Exception,e:
+    except Exception as e:
         log.error("EX:"+str(e))
         return None, False
 
