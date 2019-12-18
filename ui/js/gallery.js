@@ -151,8 +151,13 @@ Vue.component('gallery-view', {
 
             }
         }.bind(this));
+        this.wide = window.innerWidth>=500;
         bus.$on('windowWidthChanged', function() {
             this.layoutGrid();
+            var wide = window.innerWidth>=500;
+            if (wide!=view.wide) {
+                view.wide=wide;
+            }
         }.bind(this));
 
         this.serverRoot = '';
@@ -172,14 +177,6 @@ Vue.component('gallery-view', {
                 window.localStorage.removeItem('starred');
             }
         }
-
-        this.wide = window.innerWidth>=500;
-        window.addEventListener('resize', () => {
-            var wide = window.innerWidth>=500;
-            if (wide!=view.wide) {
-                view.wide=wide;
-            }
-        }, false);
     },
     mounted() {
         this.imageGridElement = document.getElementById('imageGrid');
