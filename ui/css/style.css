@@ -360,13 +360,6 @@ a {
  margin:auto;
 }
 
-a.star-icon {
- vertical-align:top !important;
- line-height:22px !important;
- margin-top:-8px !important;
- font-size:24px !important;
-}
-
 .hidden {
  display:none!important;
 }
@@ -379,6 +372,10 @@ a.star-icon {
  position:fixed;
  top:0px;
  left:0px;
+}
+
+.slideshow-toolbar .v-btn {
+ color: #fff;
 }
 
 .slideshow-progress {
