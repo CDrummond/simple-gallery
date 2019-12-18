@@ -32,6 +32,7 @@ var view;
 Vue.component('gallery-view', {
     template: `
 <div>
+ <v-progress-linear height="3" background-color="transparent" v-if="slideshow.slides.length>0 && slideshow.open && !slideshow.zoom && slideshow.playing" class="np-slider np-slider-desktop" class="slideshow-progress" :value="slideshow.playpc"></v-progress-linear>
  <v-toolbar v-if="slideshow.slides.length>0 && (slideshow.open || slideshow.zoom)" class="slideshow-toolbar">
   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
   <v-spacer></v-spacer>
@@ -116,7 +117,7 @@ Vue.component('gallery-view', {
             fetchingItems: false,
             grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
             showInfo: false,
-            slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false}
+            slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false, playpc:0}
         }
     },
     created() {
@@ -333,6 +334,7 @@ Vue.component('gallery-view', {
                 this.slideshow.open=false;
                 this.slideshow.playing=false;
             }
+            this.stopSlideTimer();
         },
         closeViewer() {
             this.slideshow.zoom=false;
@@ -350,6 +352,7 @@ Vue.component('gallery-view', {
             }
             this.closeViewer();
             this.slideshow.slides = [];
+            this.stopSlideTimer();
         },
         createSlideShow(index) {
             if (this.slideshow.slides.length<1) {
@@ -366,7 +369,7 @@ Vue.component('gallery-view', {
             this.slideshow.gallery = blueimp.Gallery(this.slideshow.slides,
                 {closeOnSlideClick:false,
                  onopened: function() { view.slideshow.open=true; view.addVideoSubtitles() },
-                 onslide: function() { view.setCurrentSlideShowItem() },
+                 onslide: function() { view.setCurrentSlideShowItem(); view.slideStart = (new Date()).getTime(); view.slideshow.playpc = 0; },
                  onclosed: function() { view.slideshow.open=false; view.slideshow.playing=false } });
             this.slideshow.gallery.slide(index);
             this.slideshow.playing=false;
@@ -457,8 +460,10 @@ Vue.component('gallery-view', {
             }
             if (this.slideshow.playing) {
                 this.slideshow.gallery.pause();
+                this.stopSlideTimer();
             } else {
                 this.slideshow.gallery.play();
+                this.starSlideTimer();
             }
             this.slideshow.playing=!this.slideshow.playing;
         },
@@ -469,6 +474,21 @@ Vue.component('gallery-view', {
             var url = this.serverRoot + this.items[this.slideshow.gallery.index].image;
             var name = url.substring(url.lastIndexOf('/')+1);
             download(url, name);
+        },
+        stopSlideTimer() {
+            if (undefined!==this.slideTimer) {
+                clearInterval(this.slideTimer);
+                this.slideTimer = undefined;
+            }
+            this.slideshow.playpc = 0;
+        },
+        starSlideTimer() {
+            this.slideStart = (new Date()).getTime();
+            this.slideshow.playpc = 0;
+            this.slideTimer = setInterval(function () {
+                var now = (new Date()).getTime();
+                this.slideshow.playpc = (now-this.slideStart)/50.0;
+            }.bind(this), 100);
         },
         layoutGrid() {
             const ITEM_BORDER = 8;

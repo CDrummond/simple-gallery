@@ -47,6 +47,10 @@ a {
  text-decoration:none;
 }
 
+.vue-recycle-scroller, .v-progress-linear__bar, .v-progress-linear__bar__determinate, .v-progress-linear__background {
+ transition:none !important;
+}
+
 .toolbar {
  height:var(--main-toolbar-height) !important;
  width:100vw;
@@ -370,7 +374,17 @@ a.star-icon {
 .slideshow-toolbar {
  z-index:9999999;
  background-color:transparent!important;
- box-shadow:none; width:100vw;
+ box-shadow:none;
+ width:100vw;
+ position:fixed;
+ top:0px;
+ left:0px;
+}
+
+.slideshow-progress {
+ z-index:9999990;
+ box-shadow:none;
+ width:100vw;
  position:fixed;
  top:0px;
  left:0px;
