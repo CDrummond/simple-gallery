@@ -37,8 +37,8 @@ Vue.component('gallery-view', {
   <div class="ellipsis slideshow-text">{{slideshow.title}}</div>
   <v-spacer></v-spacer>
   <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.isvideo}" @click.stop="toggleZoom()"><v-icon class="slideshow-text">{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-btn>
-  <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
-  <v-btn flat icon v-if="wide" v-bind:class="{'disabled':slideshow.playing}" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
+  <v-btn flat icon v-if="wide" @click.stop="toggleStarred()"><v-icon class="slideshow-text">{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-btn>
+  <v-btn flat icon v-if="wide" @click.stop="downloadItem()"><v-icon class="slideshow-text">cloud_download</v-icon></v-btn>
   <v-btn flat icon v-bind:class="{'disabled':slideshow.zoom}" v-if="slideshow.slides.length>1" @click.stop="playPause()"><v-icon class="slideshow-text">{{slideshow.playing ? 'pause_circle_outline' : 'play_circle_outline'}}</v-icon></v-btn>
   <v-btn v-if="wide" flat icon @click.stop="closeSlideShow(); closeViewer();"><v-icon class="slideshow-text">close</v-icon></v-btn>
   <v-menu v-if="!wide" bottom>
@@ -48,11 +48,11 @@ Vue.component('gallery-view', {
      <v-list-tile-avatar><v-icon>{{slideshow.zoom ? 'zoom_out' : 'zoom_in'}}</v-icon></v-list-tile-avatar>
      <v-list-tile-content>{{slideshow.zoom ? "Restore" : "Allow zooming"}}</v-list-tile-content>
     </v-list-tile>
-    <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="toggleStarred()">
+    <v-list-tile @click="toggleStarred()">
      <v-list-tile-avatar><v-icon>{{slideshow.starred ? 'star' : 'star_border'}}</v-icon></v-list-tile-avatar>
      <v-list-tile-content>{{slideshow.starred ? "Remove star" : "Mark with star"}}</v-list-tile-content>
     </v-list-tile>
-    <v-list-tile v-bind:class="{'disabled':slideshow.playing}" @click="downloadItem()">
+    <v-list-tile @click="downloadItem()">
      <v-list-tile-avatar><v-icon>cloud_download</v-icon></v-list-tile-avatar>
      <v-list-tile-content>Download</v-list-tile-content>
     </v-list-tile>
@@ -425,7 +425,7 @@ Vue.component('gallery-view', {
             if (this.slideshow.zoom) {
                 this.closeSlideShow();
                 if (undefined==this.slideshow.viewer) {
-                    this.slideshow.viewer = new ImageViewer.FullScreenViewer({snapView:true}); 
+                    this.slideshow.viewer = new ImageViewer.FullScreenViewer({snapView:!IS_MOBILE});
                 }
                 var img = this.items[this.slideshow.gallery.index].image;
                 this.slideshow.viewer.show('/api/scaled'+img, this.serverRoot+img);
@@ -437,9 +437,6 @@ Vue.component('gallery-view', {
             }
         },
         toggleStarred() {
-            if (this.slideshow.playing) {
-                return;
-            }
             var url = this.items[this.slideshow.gallery.index].image;
             if (this.starred.has(url)) {
                 this.starred.delete(url);
@@ -467,7 +464,7 @@ Vue.component('gallery-view', {
         },
         downloadItem() {
             if (this.slideshow.playing) {
-                return;
+                this.playPause();
             }
             var url = this.serverRoot + this.items[this.slideshow.gallery.index].image;
             var name = url.substring(url.lastIndexOf('/')+1);
@@ -488,7 +485,6 @@ Vue.component('gallery-view', {
                     this.slideshow.playpc = 0;
                     var index = this.slideshow.gallery.index + 1;
                     this.slideshow.gallery.slide(index >=this.items.length ? 0 : index);
-                    
                 }
             }.bind(this), 100);
         },
