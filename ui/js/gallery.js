@@ -431,7 +431,7 @@ Vue.component('gallery-view', {
                 var img = this.items[this.slideshow.gallery.index].image;
                 this.slideshow.viewer.show('/api/scaled'+img, this.serverRoot+img);
             } else if (undefined!=this.slideshow.viewer) {
-                this.slideshow.viewer.hide();
+                this.slideshow.viewer = this.slideshow.viewer.destroy();
             }
         },
         toggleStarred() {
