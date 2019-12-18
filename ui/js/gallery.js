@@ -135,6 +135,7 @@ Vue.component('gallery-view', {
         view = this;
         this.history = [];
         this.starred = new Map();
+        this.admin = window.location.href.indexOf('?admin')>0;
 
         bus.$on('setLevel', function(level) {
             this.goTo(level);
@@ -340,7 +341,7 @@ Vue.component('gallery-view', {
             }
         },
         context(item, index, event) {
-            if (this.path.length>1 && this.path!=STARRED_ACTION.id) {
+            if (this.admin && this.path.length>1 && this.path!=STARRED_ACTION.id) {
                 this.menu={show:true, item:item, x:event.clientX, y:event.clientY, index:index};
             }
             event.preventDefault();
