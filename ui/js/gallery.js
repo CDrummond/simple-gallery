@@ -4,6 +4,8 @@
  * Licensed under the MIT license.
  */
 
+const SLIDESHOW_TIME = 5;
+
 const GRID_SIZES = [ {sz:133, clz:'image-grid-a'},
                      {sz:138, clz:'image-grid-b'},
                      {sz:143, clz:'image-grid-c'},
@@ -478,15 +480,16 @@ Vue.component('gallery-view', {
             this.slideshow.playpc = 0;
         },
         starSlideTimer() {
+            const SLIDESHOW_TIME_STEP = 2;
             this.slideshow.playpc = 0;
             this.slideTimer = setInterval(function () {
-                this.slideshow.playpc += 2;
+                this.slideshow.playpc += SLIDESHOW_TIME_STEP;
                 if (this.slideshow.playpc>100) {
                     this.slideshow.playpc = 0;
                     var index = this.slideshow.gallery.index + 1;
                     this.slideshow.gallery.slide(index >=this.items.length ? 0 : index);
                 }
-            }.bind(this), 100);
+            }.bind(this), (SLIDESHOW_TIME*1000)/(100/SLIDESHOW_TIME_STEP));
         },
         layoutGrid() {
             const ITEM_BORDER = 8;
