@@ -425,17 +425,13 @@ Vue.component('gallery-view', {
             }
             this.slideshow.zoom=!this.slideshow.zoom;
             if (this.slideshow.zoom) {
-                this.closeSlideShow();
                 if (undefined==this.slideshow.viewer) {
                     this.slideshow.viewer = new ImageViewer.FullScreenViewer({snapView:!IS_MOBILE});
                 }
                 var img = this.items[this.slideshow.gallery.index].image;
                 this.slideshow.viewer.show('/api/scaled'+img, this.serverRoot+img);
             } else if (undefined!=this.slideshow.viewer) {
-                this.$nextTick(function () {
-                    this.createSlideShow(this.slideshow.gallery.index);
-                    this.slideshow.viewer.hide();
-                });
+                this.slideshow.viewer.hide();
             }
         },
         toggleStarred() {

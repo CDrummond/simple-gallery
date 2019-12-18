@@ -421,6 +421,10 @@ a {
  background:black!important;
 }
 
+.iv-fullscreen {
+ z-index:9999990;
+}
+
 .iv-fullscreen-close {
  display:none!important;
 }
