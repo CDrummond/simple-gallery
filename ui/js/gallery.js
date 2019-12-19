@@ -414,7 +414,7 @@ Vue.component('gallery-view', {
         closeViewer() {
             this.slideshow.zoom=false;
             if (undefined!=this.slideshow.viewer) {
-                this.slideshow.viewer.hide();
+                this.slideshow.viewer = this.slideshow.viewer.destroy();
             }
         },
         destroySlideShow() {
