@@ -15,6 +15,7 @@ sourceFolder='photos'
 cacheFolder='thumb'
 thumbSize="200x200"
 scaledSize="1920x1080"
+portraitVideoBlackBars=False
 htmlThumbSize=150
 thumbQuality=75
 scaledQuality=82
@@ -37,6 +38,7 @@ def load():
     global thumbQuality
     global scaledSuffix
     global scaledSize
+    global portraitVideoBlackBars
     global thumbQuality
     global serverRoot
     global convert
@@ -75,6 +77,8 @@ def load():
                     scaledSize=config['scaledSize']
                 if 'scaledQuality' in config:
                     scaledQuality=config['scaledQuality']
+                if 'portraitVideoBlackBars' in config:
+                    portraitVideoBlackBars=config['portraitVideoBlackBars']
                 if 'serverRoot' in config:
                     serverRoot=config['serverRoot']
                 if 'ignoreFolders' in config:

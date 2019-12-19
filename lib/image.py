@@ -31,7 +31,7 @@ def createImage(source, dest, fType, size, quality):
             thumbPos = 5
         elif duration > 2:
             thumbPos = 1
-        if portrait and config.scaledSize == size:
+        if portrait and config.portraitVideoBlackBars and config.scaledSize == size:
             # Add black bars
             vidSize=size.replace("x", ":")
             subprocess.call([config.ffmpeg, '-loglevel', 'panic', '-i', source, '-vframes', '1', '-an', '-ss', str(thumbPos), "-qscale:v", "8",
