@@ -17,11 +17,11 @@ import lib.cachegen as cachegen
 
 def startServer():
     root = static.File(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ui'))
-    root.putChild('source', static.File(config.sourceFolder))
-    root.putChild('api', WSGIResource(reactor, reactor.getThreadPool(), flask_app.app))
+    root.putChild(b'source', static.File(config.sourceFolder))
+    root.putChild(b'api', WSGIResource(reactor, reactor.getThreadPool(), flask_app.app))
     site=Site(root)
     reactor.listenTCP(config.port, site)
-    log.info("Starting server on port "+str(config.port))
+    log.info("Starting server on port %d " % config.port)
     reactor.run()
 
 if __name__=='__main__':
