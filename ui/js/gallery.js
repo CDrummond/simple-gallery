@@ -341,7 +341,7 @@ Vue.component('gallery-view', {
             }
         },
         context(item, index, event) {
-            if (this.admin && this.path.length>1 && this.path!=STARRED_ACTION.id) {
+            if (this.admin && this.path.length>1 && this.path!=STARRED_ACTION.id && this.path.indexOf('?filter=')<0) {
                 this.menu={show:true, item:item, x:event.clientX, y:event.clientY, index:index};
             }
             event.preventDefault();
