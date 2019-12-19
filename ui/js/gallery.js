@@ -503,8 +503,8 @@ Vue.component('gallery-view', {
                 }
                 var img = this.items[this.slideshow.gallery.index].image;
                 this.slideshow.viewer.show('/api/scaled'+img, '/api/view'+img);
-            } else if (undefined!=this.slideshow.viewer) {
-                this.slideshow.viewer = this.slideshow.viewer.destroy();
+            } else {
+                this.closeViewer();
             }
         },
         toggleStarred() {

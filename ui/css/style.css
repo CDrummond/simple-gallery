@@ -444,3 +444,19 @@ a {
  font-family:Roboto,sans-serif;
 }
 
+.blueimp-gallery > .slides > .slide > .video-paused > iframe {
+  top: 0;
+}
+.blueimp-gallery > .slides > .slide > .video-paused > a {
+ width:100%;
+ height:100%;
+ background-image:none!important;
+}
+
+.blueimp-gallery > .slides > .slide > .video-paused > img {
+  display: none;
+}
+.blueimp-gallery > .slides > .slide > .video-paused > video {
+  display: block;
+}
+
