@@ -30,7 +30,7 @@ Vue.component('gallery-toolbar', {
   <v-spacer></v-spacer>
   <template v-for="(action, index) in actions">
    <v-btn flat icon @click.stop="bus.$emit('action', action.id)" :title="action.title">
-    <v-icon>{{action.icon}}</v-icon>
+    <v-icon v-bind:class="{'disabled':thumbGenActive && action.id==GEN_ACTION.id}">{{action.icon}}</v-icon>
    </v-btn>
   </template>
  </v-toolbar>
@@ -44,7 +44,8 @@ Vue.component('gallery-toolbar', {
                     history: [],
                     actions: [],
                     snackbar: { show:false, msg:undefined, color:undefined },
-                    trans: { title:"Photo Gallery" }
+                    trans: { title:"Photo Gallery" },
+                    thumbGenActive: false
                }
     },
     mounted() {
@@ -56,6 +57,9 @@ Vue.component('gallery-toolbar', {
                 this.history.push(history[i].name);
             }
             this.actions=actions;
+        }.bind(this));
+        bus.$on('thumbGenActive', function(active) {
+            this.thumbGenActive = active;
         }.bind(this));
         bus.$on('showError', function(msg) {
             this.snackbar = {msg:msg, show: true, color: 'error' };

@@ -20,7 +20,7 @@ def root(path):
     log.info("View %s " % path)
 
     if ('/../' in path) or not path.rsplit('.', 1)[1].lower()=='jpg':
-        log.error("Invalid path %s "% path)
+        log.error("Invalid path %s " % path)
         abort(403)
         return
 

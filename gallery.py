@@ -31,4 +31,4 @@ if __name__=='__main__':
     elif 'cache' == mode:
         log.enabled = True
         log.info("Creating cached images")
-        cachegen.createCachedImages('', )
+        cachegen.createCachedImages('')

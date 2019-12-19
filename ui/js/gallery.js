@@ -28,6 +28,7 @@ const STARRED_ACTION  = {id:'act:stared', title:'Show starred photos', icon:'sta
 const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter' };
 const INFO_ACTION     = {id:'act:info', title:'Show information', icon:'info'};
 const CLEAR_ACTION    = {id:'act:clear', title:'Clear', icon:'delete'};
+const GEN_ACTION      = {id:'act:gen', title:'Generate thumbnails', icon:'photo'};
 
 var view;
 
@@ -136,6 +137,10 @@ Vue.component('gallery-view', {
         this.history = [];
         this.starred = new Map();
         this.admin = window.location.href.indexOf('?admin')>0;
+        this.thumbGen = false;
+        if (this.admin) {
+            this.checkThumbStatus();
+        }
 
         bus.$on('setLevel', function(level) {
             this.goTo(level);
@@ -158,7 +163,8 @@ Vue.component('gallery-view', {
                         this.goTo(-1);
                     }
                 });
-
+            } else if (GEN_ACTION.id==id) {
+                this.generateThumbnails();
             }
         }.bind(this));
         this.wide = window.innerWidth>=500;
@@ -243,6 +249,9 @@ Vue.component('gallery-view', {
                     actions.push(INFO_ACTION);
                 }
             } else {
+                if (this.admin) {
+                    actions.push(GEN_ACTION);
+                }
                 if (this.starred.size>0) {
                     actions.push(STARRED_ACTION);
                 }
@@ -348,10 +357,51 @@ Vue.component('gallery-view', {
         },
         setThumbnail(item, index) {
             var data = {thumb:item.image.substring(this.path.length+(this.path.endsWith('/') ? 0 : 1))};
-            axios.post('/api/thumb'+fixPath(this.path), data).then((resp) => {
+            axios.post('/api/thumb'+fixPath(this.path)+'?cmd=set', data).then((resp) => {
                 bus.$emit('showMessage', 'Thumbnail set');
                 this.history[this.history.length-1].refresh=true;
             });
+        },
+        generateThumbnails() {
+            if (this.thumbGen) {
+                return;
+            }
+            this.$confirm('Generate missing thumbnails?', {buttonTrueText:'Generate', buttonFalseText:'Cancel'}).then(res => {
+                if (res) {
+                    axios.post('/api/thumb/?cmd=gen', {}).then((resp) => {
+                        this.checkThumbStatus();
+                    });
+                }
+            });
+        },
+        checkThumbStatus() {
+            axios.get('/api/thumb/?cmd=status&x=time'+(new Date().getTime())).then((resp) => {
+                if (resp && resp.data && undefined!=resp.data.thumbgenThreadRunning) {
+                    var thumbGen = resp.data.thumbgenThreadRunning;
+                    if (thumbGen!=this.thumbGen) {
+                        this.thumbGen = thumbGen;
+                        bus.$emit('thumbGenActive', this.thumbGen);
+                        if (this.thumbGen) {
+                            this.startThumbGenTimer();
+                        } else {
+                            this.cancelThumbGenTimer();
+                        }
+                    }
+                }
+            });
+        },
+        cancelThumbGenTimer() {
+            if (undefined!==this.thumbGenTimer) {
+                clearInterval(this.thumbGenTimer);
+                this.thumbGenTimer = undefined;
+            }
+        },
+        startThumbGenTimer() {
+            if (undefined==this.thumbGenTimer) {
+                this.thumbGenTimer = setInterval(function () {
+                    this.checkThumbStatus();
+                }.bind(this), 2000);
+            }
         },
         closeSlideShow() {
             if (this.slideshow.open) {
