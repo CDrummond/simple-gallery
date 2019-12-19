@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/usr/bin/python /PATH/gallery.py -c /PATH/config.json
+ExecStart=/usr/bin/python3 /PATH/gallery.py -c /PATH/config.json
 
 [Install]
 WantedBy=multi-user.target
