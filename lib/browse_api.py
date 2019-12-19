@@ -103,7 +103,7 @@ def findFirstImage(directory):
     if len(candidates)>0:
         candidates=sorted(candidates, key=lambda k: k['name'])
 
-        dirParts = len(filter(None, directory.split("/")))
+        dirParts = len(list(filter(None, directory.split("/"))))
         image='/'.join(candidates[0]['parts'][dirParts:])+'/'+candidates[0]['name']
         saveInfo(directory, image)
         res=resolveLink(directory, image)
