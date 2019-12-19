@@ -24,6 +24,7 @@ serverRoot='/source'
 convert=None
 ffmpeg=None
 ffprobe=None
+exiftran=None
 ignoreFolders=None
 
 def load():
@@ -41,6 +42,7 @@ def load():
     global convert
     global ffmpeg
     global ffprobe
+    global exiftran
     global ignoreFolders
     enableLog = log.enabled
     parser = argparse.ArgumentParser(description='Gallery WebApp.')
@@ -112,6 +114,7 @@ def load():
     convert=utils.which('convert')
     ffmpeg=utils.which('ffmpeg')
     ffprobe=utils.which('ffprobe')
+    exiftran=utils.which('exiftran')
     if None==ffmpeg:    
         ffmpeg=utils.which('avconv')
     if None==ffmpeg:
@@ -122,6 +125,9 @@ def load():
         return None
     if None==ffprobe:
         log.error("Please install 'ffprobe'")
+        return None
+    if None==exiftran:
+        log.error("Please install 'exiftran'")
         return None
     log.enabled = enableLog
     return args.mode

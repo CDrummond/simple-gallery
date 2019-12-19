@@ -452,7 +452,7 @@ Vue.component('gallery-view', {
                     this.slideshow.viewer = new ImageViewer.FullScreenViewer({snapView:!IS_MOBILE});
                 }
                 var img = this.items[this.slideshow.gallery.index].image;
-                this.slideshow.viewer.show('/api/scaled'+img, this.serverRoot+img);
+                this.slideshow.viewer.show('/api/scaled'+img, '/api/view'+img);
             } else if (undefined!=this.slideshow.viewer) {
                 this.slideshow.viewer = this.slideshow.viewer.destroy();
             }
