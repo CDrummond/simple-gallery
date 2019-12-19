@@ -16,7 +16,6 @@ cacheFolder='thumb'
 thumbSize="200x200"
 scaledSize="1920x1080"
 portraitVideoBlackBars=False
-htmlThumbSize=150
 thumbQuality=75
 scaledQuality=82
 thumbSuffix='_thumb.jpg'
@@ -33,7 +32,6 @@ def load():
     global sourceFolder
     global cacheFolder
     global thumbSize
-    global htmlThumbSize
     global thumbSuffix
     global thumbQuality
     global scaledSuffix
@@ -65,8 +63,6 @@ def load():
                     cacheFolder=config['cacheFolder']
                 if 'thumbSize' in config:
                     thumbSize=config['thumbSize']
-                if 'htmlThumbSize' in config:
-                    htmlThumbSize=config['htmlThumbSize']
                 if 'thumbSuffix' in config:
                     thumbSuffix=config['thumbSuffix']
                 if 'thumbQuality' in config:
