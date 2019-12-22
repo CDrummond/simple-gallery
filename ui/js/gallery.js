@@ -231,7 +231,7 @@ Vue.component('gallery-view', {
                     this.path = prev.path;
                     this.updateToolbar();
                     this.destroySlideShow();
-                    this.layoutGrid();
+                    this.layoutGrid(true);
                     this.$nextTick(function () {
                         setScrollTop(this.imageGridElement, prev.pos);
                     });
@@ -301,7 +301,7 @@ Vue.component('gallery-view', {
                 this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
                 this.updateToolbar();
                 this.destroySlideShow();
-                this.layoutGrid();
+                this.layoutGrid(true);
                 this.$nextTick(function () {
                     setScrollTop(this.imageGridElement, 0);
                 });
@@ -484,7 +484,7 @@ Vue.component('gallery-view', {
             this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
             this.updateToolbar();
             this.destroySlideShow();
-            this.layoutGrid();
+            this.layoutGrid(true);
             this.$nextTick(function () {
                 setScrollTop(this.imageGridElement, 0);
             });
@@ -560,7 +560,7 @@ Vue.component('gallery-view', {
                 }
             }.bind(this), (SLIDESHOW_TIME*1000)/(100/SLIDESHOW_TIME_STEP));
         },
-        layoutGrid() {
+        layoutGrid(force) {
             const ITEM_BORDER = 8;
             const VIEW_RIGHT_PADDING = 4;
             var changed = false;
@@ -584,7 +584,7 @@ Vue.component('gallery-view', {
                     }
                 }
             }
-            if (numColumns != this.grid.numColumns) { // Need to re-layout...
+            if (force || numColumns != this.grid.numColumns) { // Need to re-layout...
                 changed = true;
                 this.grid.rows=[];
                 var prefix = this.history.length+".";
@@ -606,6 +606,7 @@ Vue.component('gallery-view', {
                 this.grid.few = few;
                 changed = true;
             }
+            console.log(changed, this.grid.rows.length);
             if (changed) {
                 this.$forceUpdate();
             }
