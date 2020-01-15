@@ -110,13 +110,11 @@ Vue.component('gallery-view', {
  <v-progress-circular class="load-progress" v-if="fetchingItems" color="primary" size=72 width=6 indeterminate></v-progress-circular>
  <v-dialog v-model="showInfo" v-if="showInfo" persistent scrollable width="600">
   <v-card>
-   <v-card-text id="infoText">
-    <p><template v-for="(item, index) in items">{{item.image}}<br/></template></p>
-   </v-card-text>
+   <v-textarea auto-grow readonly :rows="items.length>9 ? 10 : items.length+2" id="infoText" :value="infoText" style="margin:8px; min-height:64px"></v-textarea>
    <v-card-actions>
     <v-spacer></v-spacer>
     <v-btn flat @click.native="copyInfo()">Copy to clipboard</v-btn>
-    <v-btn flat @click.native="showInfo=false">Close</v-btn>
+    <v-btn flat @click.native="showInfo=false; infoText=undefined">Close</v-btn>
    </v-card-actions>
   </v-card>
  </v-dialog>
@@ -128,6 +126,7 @@ Vue.component('gallery-view', {
             fetchingItems: false,
             grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
             showInfo: false,
+            infoText: undefined,
             slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false, playpc:0},
             menu: { show: false, x:0, y:0 }
         }
@@ -154,6 +153,10 @@ Vue.component('gallery-view', {
             } else if (SHOW_ALL_ACTION.id==id) {
                 this.fetchItems(this.path+'?filter=all', this.name+' (All)');
             } else if (INFO_ACTION.id==id) {
+                this.infoText="";
+                for (var i=0, len=this.items.length; i<len; ++i) {
+                    this.infoText+=this.items[i].image+"\n";
+                }
                 this.showInfo = true;
             } else if (CLEAR_ACTION.id==id) {
                this.$confirm('Unstar all photos and videos?', {buttonTrueText:'Unstar all', buttonFalseText:'Cancel'}).then(res => {
@@ -200,19 +203,23 @@ Vue.component('gallery-view', {
     },
     methods: {
         copyInfo() {
-            if (document.selection) {
-                var range = document.body.createTextRange();
-                range.moveToElementText(document.getElementById('infoText'));
-                range.select().createTextRange();
-                document.execCommand('copy');
-                document.selection.empty();
-            } else if (window.getSelection) {
-                var range = document.createRange();
-                range.selectNode(document.getElementById('infoText'));
-                window.getSelection().addRange(range);
-                document.execCommand('copy');
-                window.getSelection().removeAllRanges();
-            }
+            var infoTextElement = document.getElementById('infoText'),
+                oldContentEditable = infoTextElement.contentEditable,
+                oldReadOnly = infoTextElement.readOnly,
+                range = document.createRange();
+
+            infoTextElement.contentEditable = true;
+            infoTextElement.readOnly = false;
+            range.selectNodeContents(infoTextElement);
+
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            infoTextElement.setSelectionRange(0, 999999);
+            infoTextElement.contentEditable = oldContentEditable;
+            infoTextElement.readOnly = oldReadOnly;
+            document.execCommand('copy');
         },
         goTo(level) {
             if (level<0) { // -1 == go home
@@ -606,7 +613,6 @@ Vue.component('gallery-view', {
                 this.grid.few = few;
                 changed = true;
             }
-            console.log(changed, this.grid.rows.length);
             if (changed) {
                 this.$forceUpdate();
             }
