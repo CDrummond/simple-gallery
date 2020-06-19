@@ -110,7 +110,7 @@ Vue.component('gallery-view', {
  <v-progress-circular class="load-progress" v-if="fetchingItems" color="primary" size=72 width=6 indeterminate></v-progress-circular>
  <v-dialog v-model="showInfo" v-if="showInfo" persistent scrollable width="600">
   <v-card>
-   <v-textarea auto-grow readonly :rows="items.length>9 ? 10 : items.length+2" id="infoText" :value="infoText" style="margin:8px; min-height:64px"></v-textarea>
+   <v-textarea auto-grow readonly :rows="items.length>9 ? 10 : items.length+2" :value="infoText" style="margin:8px; min-height:64px"></v-textarea>
    <v-card-actions>
     <v-spacer></v-spacer>
     <v-btn flat @click.native="copyInfo()">Copy to clipboard</v-btn>
@@ -203,23 +203,7 @@ Vue.component('gallery-view', {
     },
     methods: {
         copyInfo() {
-            var infoTextElement = document.getElementById('infoText'),
-                oldContentEditable = infoTextElement.contentEditable,
-                oldReadOnly = infoTextElement.readOnly,
-                range = document.createRange();
-
-            infoTextElement.contentEditable = true;
-            infoTextElement.readOnly = false;
-            range.selectNodeContents(infoTextElement);
-
-            var selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-
-            infoTextElement.setSelectionRange(0, 999999);
-            infoTextElement.contentEditable = oldContentEditable;
-            infoTextElement.readOnly = oldReadOnly;
-            document.execCommand('copy');
+            copyTextToClipboard(this.infoText);
         },
         goTo(level) {
             if (level<0) { // -1 == go home

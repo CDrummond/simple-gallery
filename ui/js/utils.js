@@ -33,3 +33,42 @@ function fixPath(path) {
     return path.startsWith('/') ? path : ('/'+path);
 }
 
+function copyTextToClipboard(text) {
+    if (navigator.clipboard) {
+        try{
+            navigator.clipboard.writeText(text);
+            return;
+        } catch (err) {
+        }
+    }
+    var textArea = document.createElement("textarea");
+    textArea.setAttribute('readonly', true);
+    textArea.setAttribute('contenteditable', true);
+    textArea.value = text;
+
+    // Avoid scrolling to bottom
+    textArea.style.top = 0;
+    textArea.style.left = 0;
+    textArea.style.position = 'fixed';
+    textArea.style.width = '1px';
+    textArea.style.height = '1px';
+    textArea.style.padding = 0;
+    textArea.style.border = 'none';
+    textArea.style.outline = 'none';
+    textArea.style.boxShadow = 'none';
+    textArea.style.background = 'transparent';
+    document.body.appendChild(textArea);
+    textArea.select();
+    const range = document.createRange();
+    range.selectNodeContents(textArea);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    textArea.setSelectionRange(0, textArea.value.length);
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+    } finally {
+        document.body.removeChild(textArea);
+    }
+}
