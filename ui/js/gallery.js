@@ -153,6 +153,13 @@ Vue.component('gallery-view', {
                 view.wide=wide;
             }
         }.bind(this));
+        bus.$on('esc', function() {
+            if (this.slideshow.open) {
+                this.closeSlideShow();
+            } else if (this.history.length>0) {
+                this.goTo(this.history.length-1);
+            }
+        }.bind(this));
 
         this.serverRoot = '';
         axios.get('/api/config?x=time'+(new Date().getTime())).then((resp) => {

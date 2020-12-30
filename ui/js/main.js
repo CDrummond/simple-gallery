@@ -46,8 +46,15 @@ var app = new Vue({
         window.addEventListener('popstate', function(event) {
             if (event.state && event.state.noBackExitsApp) {
                 window.history.pushState({ noBackExitsApp: true }, '');
+                bus.$emit('esc');
             }
         }, false);
+
+        window.addEventListener('keyup', function(event) {
+            if (event.keyCode === 27) {
+                bus.$emit('esc');
+            }
+        });
     },
     methods: {
     }
