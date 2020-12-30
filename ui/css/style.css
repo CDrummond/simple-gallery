@@ -90,7 +90,7 @@ a {
  margin:0px;
  overflow-x:hidden !important;
  overflow-y:auto !important;
- padding: 8px 4px 8px 0px;/* t, r, b, l */
+ padding: 4px;
 }
 
 .image-grid table {
@@ -176,7 +176,7 @@ a {
  padding:0px;
  background-color:rgba(0,0,0,0) !important;
  cursor:pointer;
- width:calc(135px + (5px * var(--image-grid-factor))) !important;
+ width:calc(139px + (5px * var(--image-grid-factor))) !important;
  height:calc(135px + (5px * var(--image-grid-factor))) !important;
 }
 

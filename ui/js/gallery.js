@@ -5,10 +5,10 @@
  */
 
 const SLIDESHOW_TIME = 5;
-const GRID_MIN_SIZE = 135;
+const GRID_MIN_SIZE = 140;
 const GRID_MAX_SIZE = 260;
 const GRID_STEP = 5;
-const GRID_PADDING = 4;
+const GRID_PADDING = 0;
 const THIS_DAY_ACTION = {id:'act:thisday', title:'Show photos from this day', icon:'schedule'};
 const STARRED_ACTION  = {id:'act:stared', title:'Show starred photos', icon:'star'};
 const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter' };
@@ -546,10 +546,9 @@ Vue.component('gallery-view', {
             return {size: size, steps: steps, nc: numColumns}
         },
         layoutGrid(force) {
-            const VIEW_RIGHT_PADDING = 8;
             var changed = false;
             var viewWidth = window.innerWidth;
-            var listWidth = viewWidth - ((/*scrollbar*/ IS_MOBILE ? 0 : 20) + VIEW_RIGHT_PADDING);
+            var listWidth = viewWidth - (/*scrollbar*/ IS_MOBILE ? 0 : 20);
 
             // Calculate what grid item size we should use...
             var sz = undefined;
