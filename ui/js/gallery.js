@@ -6,7 +6,7 @@
 
 const SLIDESHOW_TIME = 5;
 const GRID_MIN_SIZE = 135;
-const GRID_MAX_SIZE = 260;  // 235
+const GRID_MAX_SIZE = 260;
 const GRID_STEP = 5;
 const GRID_PADDING = 4;
 const THIS_DAY_ACTION = {id:'act:thisday', title:'Show photos from this day', icon:'schedule'};
