@@ -69,14 +69,14 @@ Vue.component('gallery-view', {
  </div>
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
   <RecycleScroller :items="grid.rows" :item-size="grid.ih + GRID_PADDING" page-mode key-field="id">
-   <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width']">
-    <td align="center" style="vertical-align: top" v-for="(idx, cidx) in item.indexes"><v-card flat align="left" class="image-grid-item">
-     <div v-if="idx>=items.length" class="image-grid-item"></div>
-     <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" @contextmenu="context(items[idx], idx, $event)" :title="items[idx].name">
-      <img class="image-grid-item-img" :key="items[idx].image" :src="'/api/thumb'+items[idx].image"></img>
-      <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
-      <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
-      <div class="image-grid-video-overlay" v-else-if="items[idx].isvideo"></div>
+   <table slot-scope="{item}" :class="[grid.few ? '' : 'full-width']">
+    <td align="center" style="vertical-align: top" v-for="(citem, col) in item.items"><v-card flat align="left" class="image-grid-item">
+     <div v-if="undefined==citem" class="image-grid-item"></div>
+     <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(citem, item.rs+col, $event)" @contextmenu="context(citem, item.rs+col, $event)" :title="citem.name">
+      <img class="image-grid-item-img" :key="citem.image" :src="'/api/thumb'+citem.image"></img>
+      <div class="image-grid-text" v-if="citem.isfolder">{{citem.name}}</div>
+      <div class="image-grid-year" v-else-if="citem.year">{{citem.year}}</div>
+      <div class="image-grid-video-overlay" v-else-if="citem.isvideo"></div>
      </div>
     </v-card></td>
    </table>
@@ -555,12 +555,12 @@ Vue.component('gallery-view', {
             if (force || sz.nc != this.grid.numColumns) { // Need to re-layout...
                 changed = true;
                 this.grid.rows=[];
-                for (var i=0; i<this.items.length; i+=sz.nc) {
-                    var indexes=[]
+                for (var i=0, row=0; i<this.items.length; i+=sz.nc, row++) {
+                    var rowItems=[];
                     for (var j=0; j<sz.nc; ++j) {
-                        indexes.push(i+j);
+                        rowItems.push((i+j)<this.items.length ? this.items[i+j] : undefined);
                     }
-                    this.grid.rows.push({id:"row."+i+"."+sz.nc, indexes:indexes});
+                    this.grid.rows.push({id:"row."+i+"."+sz.nc, items:rowItems, r:row, rs:sz.nc*row});
                 }
                 this.grid.numColumns = sz.nc;
             }
