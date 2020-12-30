@@ -5,24 +5,10 @@
  */
 
 const SLIDESHOW_TIME = 5;
-
-const GRID_SIZES = [ {sz:133, clz:'image-grid-a'},
-                     {sz:138, clz:'image-grid-b'},
-                     {sz:143, clz:'image-grid-c'},
-                     {sz:148, clz:'image-grid-d'},
-                     {sz:153, clz:'image-grid-e'},
-                     {sz:158, clz:'image-grid-f'},
-                     {sz:163, clz:'image-grid-g'},
-                     {sz:168, clz:'image-grid-h'},
-                     {sz:173, clz:'image-grid-i'},
-                     {sz:178, clz:'image-grid-j'},
-                     {sz:183, clz:'image-grid-k'},
-                     {sz:188, clz:'image-grid-l'},
-                     {sz:193, clz:'image-grid-m'},
-                     {sz:198, clz:'image-grid-n'},
-                     {sz:203, clz:'image-grid-o'},
-                     {sz:208, clz:'image-grid-p'}];
-
+const GRID_MIN_SIZE = 135;
+const GRID_MAX_SIZE = 260;  // 235
+const GRID_STEP = 5;
+const GRID_PADDING = 4;
 const THIS_DAY_ACTION = {id:'act:thisday', title:'Show photos from this day', icon:'schedule'};
 const STARRED_ACTION  = {id:'act:stared', title:'Show starred photos', icon:'star'};
 const SHOW_ALL_ACTION = {id:'act:showall', title:'Show all photos', icon:'filter' };
@@ -82,8 +68,8 @@ Vue.component('gallery-view', {
   <v-btn flat icon class="next" v-if="!IS_MOBILE && !slideshow.zoom"><v-icon class="slideshow-text">keyboard_arrow_right</v-icon></v-btn> 
  </div>
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
-  <RecycleScroller :items="grid.rows" :item-size="GRID_SIZES[grid.size].sz" page-mode key-field="id" v-if="items.length>150">
-   <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
+  <RecycleScroller :items="grid.rows" :item-size="grid.ih + GRID_PADDING" page-mode key-field="id">
+   <table slot-scope="{item, index}" :class="[grid.few ? '' : 'full-width']">
     <td align="center" style="vertical-align: top" v-for="(idx, cidx) in item.indexes"><v-card flat align="left" class="image-grid-item">
      <div v-if="idx>=items.length" class="image-grid-item"></div>
      <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" @contextmenu="context(items[idx], idx, $event)" :title="items[idx].name">
@@ -95,17 +81,6 @@ Vue.component('gallery-view', {
     </v-card></td>
    </table>
   </RecycleScroller>
-  <table v-else v-for="(row, ridx) in grid.rows" :key="row.id" :class="[grid.few ? '' : 'full-width', GRID_SIZES[grid.size].clz]">
-   <td align="center" style="vertical-align: top" v-for="(idx, cidx) in row.indexes"><v-card flat align="left" class="image-grid-item">
-    <div v-if="idx>=items.length" class="image-grid-item"></div>
-    <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(items[idx], idx, $event)" @contextmenu="context(items[idx], idx, $event)" :title="items[idx].name">
-     <img class="image-grid-item-img" :key="items[idx].image" v-lazy="'/api/thumb'+items[idx].image"></img>
-     <div class="image-grid-text" v-if="items[idx].isfolder">{{items[idx].name}}</div>
-     <div class="image-grid-year" v-else-if="items[idx].year">{{items[idx].year}}</div>
-     <div class="image-grid-video-overlay" v-else-if="items[idx].isvideo"></div>
-    </div>
-   </v-card></td>
-  </table>
  </div>
  <v-progress-circular class="load-progress" v-if="fetchingItems" color="primary" size=72 width=6 indeterminate></v-progress-circular>
  <v-dialog v-model="showInfo" v-if="showInfo" persistent scrollable width="600">
@@ -124,7 +99,7 @@ Vue.component('gallery-view', {
         return {
             items: [],
             fetchingItems: false,
-            grid: {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false},
+            grid: {numColumns:0, size:GRID_MIN_SIZE, rows:[], few:false},
             showInfo: false,
             infoText: undefined,
             slideshow: {gallery:undefined, viewer:undefined, slides:[], title:undefined, starred:false, open:false, playing:false, zoom:false, isvideo:false, playpc:0},
@@ -289,7 +264,7 @@ Vue.component('gallery-view', {
                 }
 
                 this.items.sort(function(a, b) { return a.sort<b.sort ? -1 : 1 });
-                this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
+                this.grid = {numColumns:0, size:GRID_MIN_SIZE, rows:[], few:false};
                 this.updateToolbar();
                 this.destroySlideShow();
                 this.layoutGrid(true);
@@ -472,7 +447,7 @@ Vue.component('gallery-view', {
             }
             // Sort by filename here, as sorts are per-folder
             this.items.sort(function(a, b) { return a.image<b.image ? -1 : 1 });
-            this.grid = {numColumns:0, size:GRID_SIZES.length-1, rows:[], few:false};
+            this.grid = {numColumns:0, size:GRID_MIN_SIZE, rows:[], few:false};
             this.updateToolbar();
             this.destroySlideShow();
             this.layoutGrid(true);
@@ -551,48 +526,55 @@ Vue.component('gallery-view', {
                 }
             }.bind(this), (SLIDESHOW_TIME*1000)/(100/SLIDESHOW_TIME_STEP));
         },
+        calcSizes(quantity, listWidth) {
+            var size = GRID_MIN_SIZE;
+            var steps = 0;
+            while (listWidth>((size+GRID_STEP)*quantity) && (size+GRID_STEP)<=GRID_MAX_SIZE) {
+                size += GRID_STEP;
+                steps++;
+            }
+            // How many columns?
+            var maxColumns = Math.floor(listWidth / size    );
+            var numColumns = Math.max(Math.min(maxColumns, 20), 1);
+            return {size: size, steps: steps, nc: numColumns}
+        },
         layoutGrid(force) {
-            const ITEM_BORDER = 8;
-            const VIEW_RIGHT_PADDING = 4;
+            const VIEW_RIGHT_PADDING = 8;
             var changed = false;
-            var listWidth = window.innerWidth - ((/*scrollbar*/ IS_MOBILE ? 0 : 20) + VIEW_RIGHT_PADDING);
+            var viewWidth = window.innerWidth;
+            var listWidth = viewWidth - ((/*scrollbar*/ IS_MOBILE ? 0 : 20) + VIEW_RIGHT_PADDING);
 
             // Calculate what grid item size we should use...
-            var size = 0;
-            for (var i=1; i<GRID_SIZES.length && listWidth>((GRID_SIZES[i].sz+ITEM_BORDER)*2); ++i) {
-                size = i;
-            }
-
-            // How many columns?
-            var numColumns = Math.max(Math.min(Math.floor(listWidth/(GRID_SIZES[size].sz+ITEM_BORDER)), this.items.length), 1);
-            if (size==GRID_SIZES.length-1) {
-                for (var i=size; i>size-(numColumns>=3 ? 4 : 8); i--) {
-                    var nc = Math.min(Math.floor(listWidth/(GRID_SIZES[i].sz+ITEM_BORDER)), this.items.length);
-                    if (nc>numColumns) {
-                        size=i;
-                        numColumns=nc;
-                        break;
-                    }
+            var sz = undefined;
+            for (var i=4; i>=1; --i) {
+                sz = this.calcSizes(i, listWidth);
+                if (sz.nc>=i) {
+                    break;
                 }
             }
-            if (force || numColumns != this.grid.numColumns) { // Need to re-layout...
+            if (force || sz.nc != this.grid.numColumns) { // Need to re-layout...
                 changed = true;
                 this.grid.rows=[];
-                var prefix = this.history.length+".";
-                for (var i=0; i<this.items.length; i+=numColumns) {
+                for (var i=0; i<this.items.length; i+=sz.nc) {
                     var indexes=[]
-                    for (var j=0; j<numColumns; ++j) {
+                    for (var j=0; j<sz.nc; ++j) {
                         indexes.push(i+j);
                     }
-                    this.grid.rows.push({id:prefix+i, indexes:indexes});
+                    this.grid.rows.push({id:"row."+i+"."+sz.nc, indexes:indexes});
                 }
-                this.grid.numColumns = numColumns;
+                this.grid.numColumns = sz.nc;
             }
-            if (this.grid.size != size) {
-                this.grid.size = size;
+
+            if (this.grid.ih != sz.size) {
+                this.grid.ih = sz.size;
                 changed = true;
+                document.documentElement.style.setProperty('--image-grid-factor', sz.steps);
+            } else if (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--image-grid-factor'))!=sz.steps) {
+                changed = true;
+                document.documentElement.style.setProperty('--image-grid-factor', sz.steps);
             }
-            var few = 1==this.grid.rows.length && (1==this.items.length || ((this.items.length*GRID_SIZES[size].sz)*1.20)<listWidth);
+
+            var few = 1==this.grid.rows.length && (1==this.items.length || ((this.items.length*sz.size)*1.20)<listWidth);
             if (this.grid.few != few) {
                 this.grid.few = few;
                 changed = true;
