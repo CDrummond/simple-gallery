@@ -70,7 +70,7 @@ Vue.component('gallery-view', {
  <div class="image-grid" style="overflow:auto;" id="imageGrid">
   <RecycleScroller :items="grid.rows" :item-size="grid.ih + GRID_PADDING" page-mode key-field="id">
    <table slot-scope="{item}" :class="[grid.few ? '' : 'full-width']">
-    <td align="center" style="vertical-align: top" v-for="(citem, col) in item.items"><div align="left" class="image-grid-item">
+    <td align="center" style="vertical-align: top" v-for="(citem, col) in item.items" class="image-grid-item">
      <div v-if="undefined==citem" class="image-grid-item"></div>
      <div v-else class="image-grid-item" v-bind:class="{'image-grid-item-few': grid.few}" @click="click(citem, item.rs+col, $event)" @contextmenu="context(citem, item.rs+col, $event)" :title="citem.name">
       <img class="image-grid-item-img" :key="citem.image" :src="'/api/thumb'+citem.image"></img>
@@ -78,7 +78,7 @@ Vue.component('gallery-view', {
       <div class="image-grid-year" v-else-if="citem.year">{{citem.year}}</div>
       <div class="image-grid-video-overlay" v-else-if="citem.isvideo"></div>
      </div>
-    </div></td>
+    </td>
    </table>
   </RecycleScroller>
  </div>
