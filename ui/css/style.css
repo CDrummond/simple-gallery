@@ -11,7 +11,6 @@
  --sub-opacity:0.7;
  --bold-weight:500;
  --std-weight:400;
- --radius:4px;
  --image-grid-factor:0;
 }
 
@@ -110,7 +109,6 @@ a {
  object-position:50% 0%;
  display:block;
  margin-bottom:4px;
- border-radius:var(--radius);
  height:calc(135px + (5px * var(--image-grid-factor))) !important;
  width:calc(135px + (5px * var(--image-grid-factor))) !important;
 }
@@ -134,7 +132,6 @@ a {
  -webkit-box-pack:center; 
  line-height:1.25;
  margin:auto;
- border-radius:0px 0px var(--radius) var(--radius);
 }
 
 .image-grid-year {
@@ -152,7 +149,6 @@ a {
  overflow: hidden;
  margin:auto;
  opacity:0.75;
- border-radius:0px var(--radius) 0px var(--radius);
 }
 
 .image-grid-video-overlay:before {
