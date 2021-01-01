@@ -97,7 +97,7 @@ a {
  border-spacing:0px !important;
 }
 
-.image-grid table td .v-card {
+.image-grid table td .image-grid-item {
  background-color:rgba(0,0,0,0) !important
 }
 
@@ -116,9 +116,9 @@ a {
 }
 
 .image-grid-text {
- position:absolute;
- bottom:0px !important;
- left:0px !important;
+ position:relative;
+ bottom:46px !important;
+ left:-2px !important;
  width:calc(135px + (5px * var(--image-grid-factor))) !important;
  height:calc((var(--std-font-size) * 2)  + 10px)!important;
  padding:0px 2px 0px 2px;
