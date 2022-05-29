@@ -1,6 +1,6 @@
 #
 # Gallery Thumbnail Generator
-# Copyright 2019-2021 Craig Drummond <craig.p.drummond@gmail.com>
+# Copyright 2019-2022 Craig Drummond <craig.p.drummond@gmail.com>
 # Licensed under the MIT license.
 #
 
