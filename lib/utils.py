@@ -33,11 +33,9 @@ def timeStr(t, fmt='%A {D} %B %Y, {H}:%M %p', shortName=False):
         hour-=12
     if shortName:
         fmt=fmt.replace("%A", "%a").replace("%B", "%b")
-    print("FORMAT:%s / %s" % (fmt, str(shortName)))
     return time.strftime(fmt, t).replace('{D}', str(t.tm_mday)+dateEndings.get(t.tm_mday, 'th')).replace('{H}', str(hour))
 
 def fixName(name, shortName=False):
-    print("FIXNAME %s" % str(shortName));
     name=name.replace('_', ' ')
     parts=name.split('-')
     # Check for YYYY-MM-DD HH-MM-SS and return YYYY/MM/DD HH:MM:SS
